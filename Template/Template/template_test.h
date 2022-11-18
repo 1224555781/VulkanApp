@@ -434,6 +434,20 @@ inline void Test::TestFunction()
 	Print(Str);
 	std::cout << "cc" << Str << "\n";
 	Print(L"结束了");
+#ifdef MM
+	Print("MM");
+#else
+	Print("CC");
+#endif
 
 	delete base;
 }
+
+// 多个cpp 包含 会在每个cpp生成一个实体  内存开销++
+//static int a = 1;
+
+//多个cpp 包含 - 外部链接 - 会产生链接错误 
+// int  a = 1;
+
+// 内部链接 无视多个cpp 包含
+// inline int a =1;

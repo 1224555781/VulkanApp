@@ -2,6 +2,7 @@
 #define GLFW_INCLUDE_VULKAN
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define  MM ()
 #include "VulkanApplication.h"
 
 #include <GLFW/glfw3.h>
@@ -13,6 +14,12 @@
 #include "glm/vec4.hpp"
 #include "glm/glm.hpp"
 
+#define VK_USE_PLATFORM_WIN32_KHR
+#define GLFW_INCLUDE_VULKAN
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#include <vulkan/vulkan_win32.h>
+
 void VulkanApplication::RenderWindow()
 {
     while (!glfwWindowShouldClose(window)) {
@@ -23,7 +30,7 @@ void VulkanApplication::RenderWindow()
 void VulkanApplication::InitApplication()
 {
     InitVulkan();
-
+    
     InitWindow();
 }
 
@@ -44,21 +51,51 @@ void VulkanApplication::FindPhysicalDevice()
         if (IsDeviceSuitable(device))
         {
             physical_device = device;
+            break;
         }
+    }
+
+
+}
+
+void VulkanApplication::CreateLogicDevice()
+{
+    FVulkanQueueFamily queue_family = FindVulkanFamilyQueue(&physical_device_);
+    if (queue_family.IsValid())
+    {
+        
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = queue_family.Get();
+        queueCreateInfo.queueCount = 1;
+        float priority = 0.f;
+        queueCreateInfo.pQueuePriorities = &priority;
+
+        VkDeviceCreateInfo create_info{};
+        create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        create_info.enabledLayerCount = queue_family.Get();
+        create_info.pQueueCreateInfos = &queueCreateInfo;
+        //—È÷§≤„  debug
+        create_info.enabledLayerCount = 0;
+        create_info.enabledExtensionCount = 0;
+        VkResult result = vkCreateDevice(physical_device_, &create_info,nullptr,&device_);
+        if (result != VK_SUCCESS)
+        {
+            Print("Create Logic Device Failed");
+        };
     }
 }
 
 VkResult VulkanApplication::InitVulkan()
 {
-   
-
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
     Print(extensionCount, " extensions supported\n");
 
     CreateVkInstance();
-
+    CreateSurface();
+    CreateLogicDevice();
     return VK_SUCCESS;
 }
 
@@ -108,6 +145,21 @@ void VulkanApplication::CreateVkInstance()
 
 }
 
+void VulkanApplication::CreateSurface()
+{
+    VkWin32SurfaceCreateInfoKHR createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+    createInfo.hwnd = glfwGetWin32Window(window);
+    createInfo.hinstance = GetModuleHandle(nullptr);
+    VkResult Result = vkCreateWin32SurfaceKHR(Instance, &createInfo, nullptr, &surface_khr_);
+    if (Result == VK_SUCCESS)
+    {
+        Print("Create Surface Success");
+        //glfwCreateWindowSurface(Instance, window, nullptr, &surface_khr_);
+    }
+
+}
+
 void VulkanApplication::Destroy()
 {
     vkDestroyInstance(Instance, nullptr);
@@ -117,7 +169,28 @@ void VulkanApplication::Destroy()
     glfwTerminate();
 }
 
-void VulkanApplication::FindVulkanFamilyQueue(VkPhysicalDevice* physical_device)
+FVulkanQueueFamily VulkanApplication::FindVulkanFamilyQueue(VkPhysicalDevice* physical_device)
 {
+    FVulkanQueueFamily queue;
+    uint32_t Count;
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device_, &Count,nullptr);
+    std::vector<VkQueueFamilyProperties> propertieses(Count);
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device_, &Count, propertieses.data());
+    uint32_t ret = 0;
+    for (const auto& property :propertieses)
+    {
+        if(property.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        {
+            queue.Indices = ret;
+        }
 
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(physical_device_, ret, surface_khr_, &presentSupport);
+        if (presentSupport)
+        {
+            queue.SupportKHR = ret;
+        }
+        ret++;
+    }
+    return queue;
 }
