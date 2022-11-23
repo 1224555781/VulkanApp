@@ -33,6 +33,9 @@
     <ClCompile Include="VulkanApplication.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="PlatformFile.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -120,6 +123,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="VulkanApplication.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanTypeDefine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PlatformFile.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

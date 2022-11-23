@@ -161,6 +161,7 @@
     <ClCompile Include="MServer.cpp" />
     <ClCompile Include="MTypeDefine.cpp" />
     <ClCompile Include="MultiThreadTest.cpp" />
+    <ClCompile Include="PlatformFile.cpp" />
     <ClCompile Include="VulkanApplication.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -191,8 +192,10 @@
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="MServer.h" />
     <ClInclude Include="MultiThreadTest.h" />
+    <ClInclude Include="PlatformFile.h" />
     <ClInclude Include="template_test.h" />
     <ClInclude Include="VulkanApplication.h" />
+    <ClInclude Include="VulkanTypeDefine.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="glm\CMakeLists.txt" />

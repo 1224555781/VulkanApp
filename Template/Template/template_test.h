@@ -426,7 +426,7 @@ inline void Test::TestFunction()
 	};
 
 	Base* base = new Derived();
-	std::map<int, std::string> er = base->CopyOrEmptyReference();
+	//std::map<int, std::string> er = base->CopyOrEmptyReference();
 
 
 	Print(TDerivedFrom<float, std::string>::Result ? "true" : "false");

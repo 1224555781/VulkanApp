@@ -30,7 +30,8 @@ int main()
     Test::template_test->TestFunction();
 
 	VulkanApplication* application = new VulkanApplication;
-	application->RenderWindow();
+	application->InitApplication();
+	application->MainLoop();
 	delete application;
 	
 

@@ -1,5 +1,2 @@
-﻿  Main.cpp
-  VulkanApplication.cpp
-  Generating Code...
-F:\VulkanApp\Template\Template\template_test.h(418): warning C4172: returning address of local variable or temporary
+﻿  VulkanApplication.cpp
   Template.vcxproj -> F:\VulkanApp\Template\x64\Debug\Template.exe
