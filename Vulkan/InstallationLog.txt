@@ -319,3 +319,13 @@
 [130134] perform  operation: Delete
 [130134] 	- arguments: F:\Vulkan/Helpers/vc_redist.x86.exe
 [130135] Done
+************************************* Invoked: 周五 11月 25 13:13:00 2022
+[0] Arguments: F:\VulkanApp\Vulkan\maintenancetool.exe
+[27] Operations sanity check succeeded.
+[27] Language: zh-CN
+[244] Loaded control script ":/metadata/installer-config/installscript_qs.qs"
+[244] Using control script: ":/metadata/installer-config/installscript_qs.qs"
+[8736] 正在准备下载元信息...
+[11409] 正在从远程资料档案库中检索元信息...
+[15365] 正在提取元信息...
+[50526] cancelInstallation : Vulkan SDK 1.3.231.1 问题 : 是否要退出维护应用程序? Yes|No

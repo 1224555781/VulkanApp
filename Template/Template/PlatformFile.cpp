@@ -1,6 +1,8 @@
 #include "PlatformFile.h"
 
+#include <filesystem>
 #include <fstream>
+#include "cstring"
 
 FPlatformFile::~FPlatformFile()
 {
@@ -9,11 +11,21 @@ FPlatformFile::~FPlatformFile()
         delete PlatformFileManager;
     }
 }
+#include <direct.h>
+#define GetCurrentDir _getcwd
 
+std::string normalizePath(const std::string& messyPath) {
+    std::filesystem::path path(messyPath);
+    std::filesystem::path canonicalPath = std::filesystem::weakly_canonical(path);
+    std::string npath = canonicalPath.make_preferred().string();
+    return npath;
+}
 std::vector<uint8> FPlatformFile::ReadFileToBinary(const std::string& path)
 {
+    char buff[FILENAME_MAX]; //create string buffer to hold path
+    GetCurrentDir(buff, FILENAME_MAX);
+    
     std::basic_ifstream<uint8, std::char_traits<uint8>> file(path, std::ios::ate | std::ios::binary);
-
     if (!file.is_open()) {
         throw std::runtime_error("failed to open file!");
     }

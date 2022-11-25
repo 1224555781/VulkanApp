@@ -36,8 +36,7 @@ const std::vector<const char*> deviceExtensions = {
 };
 
 const std::vector<const char*> validationLayers = {
-    //"VK_LAYER_KHRONOS_validation",
-    "VK_LAYER_TENCENT_wegame_cross_overlay",
+    "VK_LAYER_KHRONOS_validation",
 };
 
 void VulkanApplication::RenderWindow()
@@ -163,7 +162,7 @@ void VulkanApplication::CreateLogicDevice()
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-    if (false && enableValidationLayers) {
+    if ( enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
     }
@@ -171,8 +170,7 @@ void VulkanApplication::CreateLogicDevice()
         createInfo.enabledLayerCount = 0;
     }
 
-    VkDevice pDevice = nullptr;// = new VkDevice;
-    if (vkCreateDevice(physical_device_, &createInfo, nullptr, &pDevice) != VK_SUCCESS) {
+    if (vkCreateDevice(physical_device_, &createInfo, nullptr, &device_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create logical device!");
     }
 
@@ -192,6 +190,8 @@ VkResult VulkanApplication::InitVulkan()
     CreateLogicDevice();
     createSwapChain();
     CreateImageView();
+    CreateRenderPass();
+    CreateGraphicsPipeline();
     CreateFrameBuffer();
     CreateCommandPool();
     CreateCommandBuffer();
@@ -467,8 +467,8 @@ VkShaderModule VulkanApplication::CreateShaderModule(const std::vector<uint8>& c
 void VulkanApplication::CreateGraphicsPipeline()
 {
     FPlatformFile* PlateformFile = FPlatformFile::Get();
-    auto vertShaderCode = PlateformFile->ReadFileToBinary("shaders/vert.spv");
-    auto fragShaderCode = PlateformFile->ReadFileToBinary("shaders/frag.spv");
+    auto vertShaderCode = PlateformFile->ReadFileToBinary("F:/VulkanApp/Template/Template/Shader/shader.vert");
+    auto fragShaderCode = PlateformFile->ReadFileToBinary("F:/VulkanApp/Template/Template/Shader/shader.frag");
 
     VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
@@ -771,9 +771,9 @@ void VulkanApplication::CreateVkInstance()
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Hello Triangle";
+    appInfo.pApplicationName = "MLB";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "No Engine";
+    appInfo.pEngineName = "Real Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 

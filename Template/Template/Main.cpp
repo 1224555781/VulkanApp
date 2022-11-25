@@ -32,6 +32,7 @@ int main()
 	VulkanApplication* application = new VulkanApplication;
 	application->InitApplication();
 	application->MainLoop();
+	application->Destroy();
 	delete application;
 	
 

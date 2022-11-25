@@ -1,2 +1,5 @@
-﻿  VulkanApplication.cpp
+﻿  Main.cpp
+  VulkanApplication.cpp
+  Generating Code...
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
   Template.vcxproj -> F:\VulkanApp\Template\x64\Debug\Template.exe
