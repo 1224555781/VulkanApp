@@ -34,7 +34,5 @@ int main()
 	application->Destroy();
 	delete application;
 
-
-
 	return 0;
 }

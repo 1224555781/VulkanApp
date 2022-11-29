@@ -57,6 +57,7 @@ struct SwapChainSupportDetails {
 class VulkanApplication
 {
 public:
+    VulkanApplication();
 
     void RenderWindow();
 
@@ -87,7 +88,7 @@ private:
     VkResult InitVulkan();
     void InitWindow();
     bool IsDeviceSuitable(const VkPhysicalDevice& device);
-    void createSwapChain();
+    void CreateSwapChain();
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
@@ -107,6 +108,14 @@ private:
     void RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uint32_t imageIndex);
 
     void CreateSyncObjects();
+
+    
+    /**
+     * \brief 处理切换视口大小- 重新创建交换链
+     */
+    void ReCreateSwapChain();
+
+    void CleanSwapChain();
 private:
     VkDebugUtilsMessengerEXT debugMessenger;
     /**
@@ -175,11 +184,14 @@ private:
     VkCommandPool commandPool;
 
     //
-    VkCommandBuffer commandBuffer;
+    std::vector< VkCommandBuffer> commandBuffer;
 
     //信号量 用来控制渲染
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
-    VkFence inFlightFence;
+    std::vector < VkSemaphore >imageAvailableSemaphore;
+    std::vector < VkSemaphore> renderFinishedSemaphore;
+    std::vector < VkFence >inFlightFence;
+
+    int32 MaxFramInFight;
+    int32 CurrentFrame;
 };
 
