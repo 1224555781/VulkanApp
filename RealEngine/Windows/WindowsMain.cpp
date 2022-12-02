@@ -4,7 +4,7 @@
 #include <vector>
 #include <thread>
 //#include "MultiThreadTest.h"
-#include "glm/glm/glm.hpp"
+#include "glm/glm.hpp"
 #include "GLFW/include/GLFW/glfw3.h"
 #include <map>
 #include "Core/Public/template_test.h"

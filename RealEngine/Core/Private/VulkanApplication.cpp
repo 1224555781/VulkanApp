@@ -10,9 +10,6 @@
 #include <vector>
 
 #include "Core/Public/template_test.h"
-#include "glm/fwd.hpp"
-#include "glm/vec4.hpp"
-#include "glm/glm.hpp"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
@@ -38,6 +35,14 @@ const std::vector<const char*> deviceExtensions = {
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation",
 };
+
+
+const std::vector<Vertex> vertices = {
+    {{0.0f, -1.0f}, {1.0f, 1.0f, 1.0f}},
+    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+};
+
 
 VulkanApplication::VulkanApplication()
     :MaxFramInFight(2)
@@ -212,6 +217,9 @@ VkResult VulkanApplication::InitVulkan()
     CreateGraphicsPipeline();
     CreateFrameBuffer();
     CreateCommandPool();
+
+    CreateVertexBuffer();
+
     CreateCommandBuffer();
     CreateSyncObjects();
     return VK_SUCCESS;
@@ -485,8 +493,8 @@ VkShaderModule VulkanApplication::CreateShaderModule(const std::vector<uint8>& c
 void VulkanApplication::CreateGraphicsPipeline()
 {
     FPlatformFile* PlateformFile = FPlatformFile::Get();
-    auto vertShaderCode = PlateformFile->ReadFileToBinary("F:/VulkanApp/Template/Template/Shader/shader.vert");
-    auto fragShaderCode = PlateformFile->ReadFileToBinary("F:/VulkanApp/Template/Template/Shader/shader.frag");
+    auto vertShaderCode = PlateformFile->ReadFileToBinary("RealEngine/Shader/shader.vert");
+    auto fragShaderCode = PlateformFile->ReadFileToBinary("RealEngine/Shader/shader.frag");
 
     VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
@@ -505,13 +513,14 @@ void VulkanApplication::CreateGraphicsPipeline()
     fragShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo ShaderStageCreateInfos[2] ={ vertShaderStageInfo ,fragShaderStageInfo };
-
+    auto AttributeDescriptions = Vertex::GetAttributeDescriptions();
+    auto BindDescription = Vertex::GetBindingDescription();
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = AttributeDescriptions.size();
+    vertexInputInfo.pVertexBindingDescriptions = &BindDescription; // Optional
+    vertexInputInfo.pVertexAttributeDescriptions = AttributeDescriptions.data(); // Optional
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -713,6 +722,64 @@ void VulkanApplication::CreateCommandBuffer()
     
 }
 
+void VulkanApplication::CreateVertexBuffer()
+{
+    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+
+    VkBuffer StagingVertexBuffer;
+    VkDeviceMemory StagingVertexMem;
+
+    CreateBuffer(bufferSize,VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, StagingVertexBuffer, StagingVertexMem);
+
+
+
+    void* data = nullptr;
+    vkMapMemory(device_, StagingVertexMem, 0, bufferSize, 0, &data);
+    //将数据拷贝到内存映射到GPU的区域
+    memcpy(data, vertices.data(), bufferSize);
+    vkUnmapMemory(device_, StagingVertexMem);
+
+    
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer,VertexMem);
+
+}
+
+void VulkanApplication::CopyBuffer(VkBuffer DstBuffer, VkBuffer SrcBuffer, VkDeviceSize Size)
+{
+    VkCommandBufferAllocateInfo allocate_info{};
+    allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocate_info.commandBufferCount = 1;
+    allocate_info.commandPool = commandPool;
+
+    VkCommandBuffer command_buffer;
+    vkAllocateCommandBuffers(device_, &allocate_info, &command_buffer);
+
+    VkCommandBufferBeginInfo BeginInfo{};
+    BeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    BeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(command_buffer, &BeginInfo);
+    VkBufferCopy BufferCopy{};
+    BufferCopy.srcOffset = 0;
+    BufferCopy.dstOffset = 0;
+    BufferCopy.size = Size;
+    vkCmdCopyBuffer(command_buffer, SrcBuffer, DstBuffer, 1, &BufferCopy);
+
+    vkEndCommandBuffer(command_buffer);
+
+
+    //需要立即提交 推送copybuffer 并等待任务完成,让显卡可以读到最佳内存位置的顶点信息
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &command_buffer;
+
+    vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(graphicsQueue);
+}
+
 void VulkanApplication::RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uint32_t imageIndex)
 {
     VkCommandBufferBeginInfo beginInfo{};
@@ -758,6 +825,10 @@ void VulkanApplication::RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uin
     scissor.offset = { 0, 0 };
     scissor.extent = swapChainExtent;
     vkCmdSetScissor(InCommandBuffer, 0, 1, &scissor);
+    
+    VkBuffer VertexBuffers[] = { VertexBuffer };
+    VkDeviceSize Offsets[] = { 0 };
+    vkCmdBindVertexBuffers(InCommandBuffer, 0, 1, VertexBuffers, Offsets);
 
     //执行渲染命令
     vkCmdDraw(InCommandBuffer, 3, 1, 0, 0);
@@ -790,6 +861,24 @@ void VulkanApplication::CreateSyncObjects()
         }
     }
     
+}
+
+uint32 VulkanApplication::FindMemeoryType(uint32 typeFilter, VkMemoryPropertyFlags property)
+{
+    
+
+    VkPhysicalDeviceMemoryProperties physical_device_memory;
+    vkGetPhysicalDeviceMemoryProperties(physical_device_, &physical_device_memory);
+
+    for (uint32 i =0; i< physical_device_memory.memoryTypeCount;++i)
+    {
+        //检测内存位置 和 属性是否满足要求
+        if (typeFilter & (1<<i) && (physical_device_memory.memoryTypes[i].propertyFlags & property) == property)
+        {
+            return i;
+        }
+    }
+    throw std::runtime_error("not find suitable mem type");
 }
 
 void VulkanApplication::ReCreateSwapChain()
@@ -879,11 +968,41 @@ void VulkanApplication::CleanSwapChain()
     vkDestroySwapchainKHR(device_, swapChain, nullptr);
 }
 
+void VulkanApplication::CreateBuffer(VkDeviceSize DeviceSize, VkBufferUsageFlags Usage, VkMemoryPropertyFlags Property_flags, VkBuffer& Buffer, VkDeviceMemory& BufferMemory)
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = DeviceSize;
+    bufferInfo.usage = Usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    vkCreateBuffer(device_, &bufferInfo, nullptr, &Buffer);
+
+    VkMemoryRequirements mem_requirements;
+    vkGetBufferMemoryRequirements(device_, VertexBuffer, &mem_requirements);
+
+    VkMemoryAllocateInfo memory_allocate_info{};
+    memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    memory_allocate_info.allocationSize = mem_requirements.size;
+    memory_allocate_info.memoryTypeIndex = FindMemeoryType(mem_requirements.memoryTypeBits, Property_flags);
+
+    VkResult MemCreateResult = vkAllocateMemory(device_, &memory_allocate_info, nullptr, &VertexMem);
+    if (MemCreateResult != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed allocate vertex mem");
+    }
+
+    vkBindBufferMemory(device_, VertexBuffer, VertexMem, 0);
+
+}
+
 
 void VulkanApplication::Destroy()
 {
     CleanSwapChain();
 
+    vkDestroyBuffer(device_, VertexBuffer, nullptr);
+    vkFreeMemory(device_, VertexMem, nullptr);
     for (int32 i = 0; i < MaxFramInFight; ++i)
     {
         vkDestroySemaphore(device_, imageAvailableSemaphore[i], nullptr);

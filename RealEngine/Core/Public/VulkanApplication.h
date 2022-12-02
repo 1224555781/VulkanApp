@@ -105,11 +105,13 @@ private:
     void CreateCommandPool();
     void CreateCommandBuffer();
 
+    void CreateVertexBuffer();
+
     void RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uint32_t imageIndex);
 
     void CreateSyncObjects();
 
-    
+    uint32 FindMemeoryType(uint32 typeFilter, VkMemoryPropertyFlags property);
     /**
      * \brief 处理切换视口大小- 重新创建交换链
      */
@@ -186,6 +188,9 @@ private:
     //
     std::vector< VkCommandBuffer> commandBuffer;
 
+
+    VkBuffer VertexBuffer;
+    VkDeviceMemory VertexMem;
     //信号量 用来控制渲染
     std::vector < VkSemaphore >imageAvailableSemaphore;
     std::vector < VkSemaphore> renderFinishedSemaphore;

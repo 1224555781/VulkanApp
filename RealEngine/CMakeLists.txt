@@ -13,7 +13,7 @@ add_executable (RealEngine "Windows/WindowsMain.cpp"  ${CORE_SOURCE} ${CORE_HEAD
 project(RealEngine)
 
 #target_link_libraries(RealEngine ${CMAKE_CURRENT_SOURCE_DIR} vulkan-1.lib)
-add_subdirectory(glm)
+
 add_subdirectory(Core)
 add_subdirectory(GLFW)
 

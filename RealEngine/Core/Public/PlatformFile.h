@@ -19,6 +19,8 @@ public:
     virtual  ~FPlatformFile();
 
     std::vector<uint8> ReadFileToBinary(const std::string& path);
+
+    std::string GetProjectPath()const;
 private:
     inline static FPlatformFile* PlatformFileManager = nullptr;
 };
