@@ -118,6 +118,14 @@ private:
     void ReCreateSwapChain();
 
     void CleanSwapChain();
+
+
+    /**
+     * \brief 创建顶点缓冲区, 顶点暂存缓冲区
+     */
+    void CreateBuffer(VkDeviceSize DeviceSize,VkBufferUsageFlags Usage,VkMemoryPropertyFlags Property_flags,VkBuffer& Buffer,VkDeviceMemory& BufferMemory);
+
+    void CopyBuffer(VkBuffer DstBuffer, VkBuffer SrcBuffer, VkDeviceSize Size);
 private:
     VkDebugUtilsMessengerEXT debugMessenger;
     /**

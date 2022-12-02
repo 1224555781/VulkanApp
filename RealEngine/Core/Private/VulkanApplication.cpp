@@ -743,6 +743,11 @@ void VulkanApplication::CreateVertexBuffer()
     
     CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer,VertexMem);
 
+
+    CopyBuffer(VertexBuffer, StagingVertexBuffer, bufferSize);
+
+    vkDestroyBuffer(device_, StagingVertexBuffer, nullptr);
+    vkFreeMemory(device_, StagingVertexMem, nullptr);
 }
 
 void VulkanApplication::CopyBuffer(VkBuffer DstBuffer, VkBuffer SrcBuffer, VkDeviceSize Size)
@@ -778,6 +783,8 @@ void VulkanApplication::CopyBuffer(VkBuffer DstBuffer, VkBuffer SrcBuffer, VkDev
 
     vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(graphicsQueue);
+
+    vkFreeCommandBuffers(device_, commandPool, 1, &command_buffer);
 }
 
 void VulkanApplication::RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uint32_t imageIndex)
@@ -979,20 +986,20 @@ void VulkanApplication::CreateBuffer(VkDeviceSize DeviceSize, VkBufferUsageFlags
     vkCreateBuffer(device_, &bufferInfo, nullptr, &Buffer);
 
     VkMemoryRequirements mem_requirements;
-    vkGetBufferMemoryRequirements(device_, VertexBuffer, &mem_requirements);
+    vkGetBufferMemoryRequirements(device_, Buffer, &mem_requirements);
 
     VkMemoryAllocateInfo memory_allocate_info{};
     memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     memory_allocate_info.allocationSize = mem_requirements.size;
     memory_allocate_info.memoryTypeIndex = FindMemeoryType(mem_requirements.memoryTypeBits, Property_flags);
 
-    VkResult MemCreateResult = vkAllocateMemory(device_, &memory_allocate_info, nullptr, &VertexMem);
+    VkResult MemCreateResult = vkAllocateMemory(device_, &memory_allocate_info, nullptr, &BufferMemory);
     if (MemCreateResult != VK_SUCCESS)
     {
         throw std::runtime_error("failed allocate vertex mem");
     }
 
-    vkBindBufferMemory(device_, VertexBuffer, VertexMem, 0);
+    vkBindBufferMemory(device_, Buffer, BufferMemory, 0);
 
 }
 
