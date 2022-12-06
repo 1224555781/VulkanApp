@@ -106,6 +106,7 @@ private:
     void CreateCommandBuffer();
 
     void CreateVertexBuffer();
+    void CreateIndexBufffer();
 
     void RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uint32_t imageIndex);
 
@@ -197,8 +198,18 @@ private:
     std::vector< VkCommandBuffer> commandBuffer;
 
 
+    /**
+     * \brief 顶点buffer
+     */
     VkBuffer VertexBuffer;
     VkDeviceMemory VertexMem;
+
+    /**
+     * \brief 索引buffer
+     */
+    VkBuffer IndicesBuffer;
+    VkDeviceMemory IndicesMem;
+
     //信号量 用来控制渲染
     std::vector < VkSemaphore >imageAvailableSemaphore;
     std::vector < VkSemaphore> renderFinishedSemaphore;

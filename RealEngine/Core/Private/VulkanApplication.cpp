@@ -38,11 +38,15 @@ const std::vector<const char*> validationLayers = {
 
 
 const std::vector<Vertex> vertices = {
-    {{0.0f, -1.0f}, {1.0f, 1.0f, 1.0f}},
-    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    {{0.5f, .5f}, {1.0f, 1.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{-0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}}
 };
 
+const std::vector<uint32> indices = {
+    0,1,2,0,2,3
+};
 
 VulkanApplication::VulkanApplication()
     :MaxFramInFight(2)
@@ -219,7 +223,7 @@ VkResult VulkanApplication::InitVulkan()
     CreateCommandPool();
 
     CreateVertexBuffer();
-
+    CreateIndexBufffer();
     CreateCommandBuffer();
     CreateSyncObjects();
     return VK_SUCCESS;
@@ -750,6 +754,34 @@ void VulkanApplication::CreateVertexBuffer()
     vkFreeMemory(device_, StagingVertexMem, nullptr);
 }
 
+void VulkanApplication::CreateIndexBufffer()
+{
+    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+
+    VkBuffer StagingVertexBuffer;
+    VkDeviceMemory StagingVertexMem;
+
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, StagingVertexBuffer, StagingVertexMem);
+
+
+
+    void* data = nullptr;
+    vkMapMemory(device_, StagingVertexMem, 0, bufferSize, 0, &data);
+    //将数据拷贝到内存映射到GPU的区域
+    memcpy(data, indices.data(), bufferSize);
+    vkUnmapMemory(device_, StagingVertexMem);
+
+
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, IndicesBuffer, IndicesMem);
+
+
+    CopyBuffer(IndicesBuffer, StagingVertexBuffer, bufferSize);
+
+    vkDestroyBuffer(device_, StagingVertexBuffer, nullptr);
+    vkFreeMemory(device_, StagingVertexMem, nullptr);
+}
+
 void VulkanApplication::CopyBuffer(VkBuffer DstBuffer, VkBuffer SrcBuffer, VkDeviceSize Size)
 {
     VkCommandBufferAllocateInfo allocate_info{};
@@ -837,8 +869,9 @@ void VulkanApplication::RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uin
     VkDeviceSize Offsets[] = { 0 };
     vkCmdBindVertexBuffers(InCommandBuffer, 0, 1, VertexBuffers, Offsets);
 
+    vkCmdBindIndexBuffer(InCommandBuffer, IndicesBuffer, 0, VK_INDEX_TYPE_UINT32);
     //执行渲染命令
-    vkCmdDraw(InCommandBuffer, 3, 1, 0, 0);
+    vkCmdDrawIndexed(InCommandBuffer,indices.size(),1,0,0,0);
 
     vkCmdEndRenderPass(InCommandBuffer);
 
@@ -1007,6 +1040,9 @@ void VulkanApplication::CreateBuffer(VkDeviceSize DeviceSize, VkBufferUsageFlags
 void VulkanApplication::Destroy()
 {
     CleanSwapChain();
+
+    vkDestroyBuffer(device_, IndicesBuffer, nullptr);
+    vkFreeMemory(device_, IndicesMem, nullptr);
 
     vkDestroyBuffer(device_, VertexBuffer, nullptr);
     vkFreeMemory(device_, VertexMem, nullptr);
