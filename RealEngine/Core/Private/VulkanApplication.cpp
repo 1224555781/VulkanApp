@@ -21,8 +21,6 @@
 #include <chrono>
 #include <set>
 #include <GLFW/glfw3native.h>
-#include <vulkan/vulkan_win32.h>
-
 #include "Core/Public/PlatformFile.h"
 
 
@@ -223,6 +221,7 @@ VkResult VulkanApplication::InitVulkan()
     CreateSwapChain();
     CreateImageView();
     CreateRenderPass();
+    CreateDescriptorSetLayout();
     CreateGraphicsPipeline();
     CreateFrameBuffer();
     CreateCommandPool();
@@ -531,7 +530,7 @@ void VulkanApplication::CreateGraphicsPipeline()
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.vertexAttributeDescriptionCount = AttributeDescriptions.size();
+    vertexInputInfo.vertexAttributeDescriptionCount =static_cast<uint32>( AttributeDescriptions.size());
     vertexInputInfo.pVertexBindingDescriptions = &BindDescription; // Optional
     vertexInputInfo.pVertexAttributeDescriptions = AttributeDescriptions.data(); // Optional
 
@@ -638,8 +637,8 @@ void VulkanApplication::CreateGraphicsPipeline()
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0; // Optional
-    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+    pipelineLayoutInfo.setLayoutCount = 1; // Optional
+    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout; // Optional
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
@@ -873,6 +872,15 @@ void VulkanApplication::CreateDescriptorSets()
             descriptorWrite.dstSet = descriptorSets[i];
             descriptorWrite.dstBinding = 0;
             descriptorWrite.dstArrayElement = 0;
+            descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrite.descriptorCount = 1;
+            descriptorWrite.pBufferInfo = &bufferInfo;
+            descriptorWrite.pImageInfo = nullptr; // Optional
+            descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+            vkUpdateDescriptorSets(device_, 1, &descriptorWrite, 0, nullptr);
+
+
         }
     }
     else
@@ -946,35 +954,37 @@ void VulkanApplication::RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uin
     renderPassInfo.pClearValues = &clearColor;
 
     //VK_SUBPASS_CONTENTS_INLINE：渲染过程命令将嵌入主命令缓冲区本身，不会执行辅助命令缓冲区。
-    //VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS：渲染过程命令将从辅助命令缓冲区执行
+    //////VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS：渲染过程命令将从辅助命令缓冲区执行
+    ///
     vkCmdBeginRenderPass(InCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(InCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+	    vkCmdBindPipeline(InCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(swapChainExtent.width);
-    viewport.height = static_cast<float>(swapChainExtent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(InCommandBuffer, 0, 1, &viewport);
+	    VkViewport viewport{};
+	    viewport.x = 0.0f;
+	    viewport.y = 0.0f;
+	    viewport.width = static_cast<float>(swapChainExtent.width);
+	    viewport.height = static_cast<float>(swapChainExtent.height);
+	    viewport.minDepth = 0.0f;
+	    viewport.maxDepth = 1.0f;
+	    vkCmdSetViewport(InCommandBuffer, 0, 1, &viewport);
 
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = swapChainExtent;
-    vkCmdSetScissor(InCommandBuffer, 0, 1, &scissor);
-    
-    VkBuffer VertexBuffers[] = { VertexBuffer };
-    VkDeviceSize Offsets[] = { 0 };
-    vkCmdBindVertexBuffers(InCommandBuffer, 0, 1, VertexBuffers, Offsets);
+	    VkRect2D scissor{};
+	    scissor.offset = { 0, 0 };
+	    scissor.extent = swapChainExtent;
+	    vkCmdSetScissor(InCommandBuffer, 0, 1, &scissor);
+	    
+	    VkBuffer VertexBuffers[] = { VertexBuffer };
+	    VkDeviceSize Offsets[] = { 0 };
+	    vkCmdBindVertexBuffers(InCommandBuffer, 0, 1, VertexBuffers, Offsets);
 
-    vkCmdBindIndexBuffer(InCommandBuffer, IndicesBuffer, 0, VK_INDEX_TYPE_UINT32);
-    //执行渲染命令
-    vkCmdDrawIndexed(InCommandBuffer,indices.size(),1,0,0,0);
+	    vkCmdBindIndexBuffer(InCommandBuffer, IndicesBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdEndRenderPass(InCommandBuffer);
-
+	    //绑定描述符集
+	    vkCmdBindDescriptorSets(InCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[CurrentFrame], 0, nullptr);
+	    //执行渲染命令
+	    vkCmdDrawIndexed(InCommandBuffer,static_cast<uint32>( indices.size()),1,0,0,0);
+	vkCmdEndRenderPass(InCommandBuffer);
 
     if (vkEndCommandBuffer(InCommandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
@@ -1012,7 +1022,7 @@ void VulkanApplication::UpdateUniformBuffer(uint32 InCurrentFrame)
     FUniformBufferObject MVP{};
     MVP.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.f), glm::vec3(0, 0, 1));
     MVP.view = glm::lookAt(glm::vec3(2.0, 2.0, 2.0), glm::vec3(0., 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
-    MVP.proj = glm::perspective<float>(glm::radians(45), static_cast<float>(swapChainExtent.width / swapChainExtent.height), 0.1f, 10.f);
+    MVP.proj = glm::perspective<float>(glm::radians(45.f), static_cast<float>(swapChainExtent.width/swapChainExtent.height), 0.1f, 10.f);
     MVP.proj[1][1] *= -1;
     memcpy(uniformBuffersMapped[InCurrentFrame], &MVP, sizeof(MVP));
 }
