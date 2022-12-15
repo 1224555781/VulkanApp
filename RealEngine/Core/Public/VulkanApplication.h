@@ -108,9 +108,17 @@ private:
     void CreateVertexBuffer();
     void CreateIndexBufffer();
 
+    void CreateDescriptorSetLayout();
+
+    void CreateUniformBuffers();
+    void CreateDescriptorPool();
+    void CreateDescriptorSets();
+
     void RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uint32_t imageIndex);
 
     void CreateSyncObjects();
+
+    void UpdateUniformBuffer(uint32 InCurrentFrame);
 
     uint32 FindMemeoryType(uint32 typeFilter, VkMemoryPropertyFlags property);
     /**
@@ -179,6 +187,7 @@ private:
     /**
      * \brief 管道布局
      */
+    VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkRenderPass renderPass;
     // 图形管道
@@ -197,6 +206,18 @@ private:
     //
     std::vector< VkCommandBuffer> commandBuffer;
 
+
+    /**
+     * \brief 通用缓存区域 描述符集
+     */
+    VkDescriptorPool descriptorPool;
+    std::vector<VkDescriptorSet> descriptorSets;
+    /**
+     * \brief 通用缓冲区---用于 示例: 实时刷新MVP 矩阵数据 - view 实时会变
+     */
+    std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    std::vector<void*> uniformBuffersMapped;
 
     /**
      * \brief 顶点buffer
