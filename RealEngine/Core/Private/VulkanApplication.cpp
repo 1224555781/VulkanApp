@@ -1,8 +1,14 @@
 
+// 对齐规则======
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #define GLFW_INCLUDE_VULKAN
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define  MM ()
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -578,15 +584,15 @@ void VulkanApplication::CreateGraphicsPipeline()
 
     //VK_POLYGON_MODE_FILL：用片段填充多边形的区域
     //VK_POLYGON_MODE_LINE：多边形边被绘制为线
-    //VK_POLYGON_MODE_POINT：多边形顶点绘制为点
-    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+	//VK_POLYGON_MODE_POINT：多边形顶点绘制为点
+    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 
     // 它根据片段数描述线条的粗细。支持的最大线宽取决于硬件和任何比1.0f要求您启用wideLinesGPU 功能更粗的线
     rasterizer.lineWidth = 1.0f;
 
-
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f; // Optional
@@ -1172,6 +1178,7 @@ void VulkanApplication::Destroy()
 
     vkDestroyDescriptorPool(device_, descriptorPool, nullptr);
     vkDestroyDescriptorSetLayout(device_, descriptorSetLayout, nullptr);
+
     vkDestroyBuffer(device_, IndicesBuffer, nullptr);
     vkFreeMemory(device_, IndicesMem, nullptr);
 

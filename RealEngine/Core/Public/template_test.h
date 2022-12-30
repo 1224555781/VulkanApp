@@ -101,7 +101,6 @@ inline void Order(T*)
 }
 
 
-
 template<typename T, typename U = std::enable_if<std::is_integral<int>::value, int>::type>
 inline void Order(T, U u)
 {
@@ -338,9 +337,16 @@ public:
 	Test()
 	{
 		Print("Test Construct===");
-		
-	}
+		const int& a = 10;
+		//int* b = &a;
+		auto&& param0 = 99;
 
+
+		auto&& param2 = &param0;
+		const auto& param = 96;
+
+	}
+	
 	static Test* template_test;
 	void TestFunction();
 };
