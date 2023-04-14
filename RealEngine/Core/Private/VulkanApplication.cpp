@@ -600,11 +600,16 @@ void VulkanApplication::CreateGraphicsPipeline()
     multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
 
-
+    // blendEnable 选择是否开启 alpha通道的blend
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    colorBlendAttachment.blendEnable = VK_FALSE;
-
+    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT ;
+    colorBlendAttachment.blendEnable = VK_TRUE;
+    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
     VkPipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -1017,7 +1022,7 @@ void VulkanApplication::UpdateUniformBuffer(uint32 InCurrentFrame)
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
     FUniformBufferObject MVP{};
     MVP.model = glm::rotate(glm::mat4(1.0f),glm::radians(90.f), glm::vec3(0, 0, 1));
-    MVP.view = glm::lookAt(glm::vec3(2.0, 2.0, 2.0), glm::vec3(0., 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
+    MVP.view = glm::lookAt(glm::vec3(1.0, 1.0, 1.0), glm::vec3(0., 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
     MVP.proj = glm::perspective<float>(glm::radians(45.f), static_cast<float>(swapChainExtent.width/swapChainExtent.height), 0.1f, 10.f);
     MVP.proj[1][1] *= -1;
     memcpy(uniformBuffersMapped[InCurrentFrame], &MVP, sizeof(MVP));
@@ -1181,7 +1186,7 @@ void VulkanApplication::CreateTextureSampler()
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 
     //使用各向异性过滤
-    samplerInfo.anisotropyEnable = VK_FALSE;
+    samplerInfo.anisotropyEnable = VK_TRUE;
 
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(GPU, &properties);
