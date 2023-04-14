@@ -1,3 +1,5 @@
+#pragma once
+
 #include "iostream"
 #include "any"
 #include "array"
@@ -7,7 +9,7 @@
 #include "glm/glm.hpp"
 #include "GLFW/include/GLFW/glfw3.h"
 #include <map>
-#include "Core/Public/template_test.h"
+
 #include "Core/Public/VulkanApplication.h"
 
 
@@ -26,7 +28,6 @@ int main()
 	Print(Value);
 #endif // __cplusplus == 202002L
 	Test::template_test->TestFunction();
-
 	VulkanApplication* application = new VulkanApplication;
 	application->InitApplication();
 	application->MainLoop();

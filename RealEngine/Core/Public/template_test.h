@@ -1,6 +1,8 @@
 #pragma once
 #include <any>
+#include <future>
 #include <map>
+#include <numeric>
 
 template<typename T,typename ...Args>
 void Print(T&& Param,const Args& ...args)
@@ -94,7 +96,7 @@ inline  void Order(int*)
 	Print(3);
 }
 
-template<typename T, typename U = std::enable_if_t<std::is_integral<decltype(3.0)>::value>>
+template<typename T, typename U = std::enable_if_t<std::is_integral<decltype(3)>::value>>
 inline void Order(T*)
 {
 	Print(2);
@@ -352,7 +354,25 @@ public:
 };
 inline Test* Test::template_test = new Test();
 
+inline void InlineTest() {
+	Print(printf("MLB %llu\n", _AddressOfReturnAddress()));
+}
 
+
+class EmpltyClass
+{
+	using StringPair = std::pair<std::string,std::string>;	
+};
+
+
+inline void accumulate(std::vector<int>::iterator first,
+	std::vector<int>::iterator last,
+	std::promise<int> accumulate_promise)
+{
+	Print("Start Calc Data");
+	int sum = std::accumulate(first, last, 0);
+	accumulate_promise.set_value(sum);  // Notify future
+}
 
 inline void Test::TestFunction()
 {
@@ -419,9 +439,10 @@ inline void Test::TestFunction()
 	class Base
 	{
 	public:
-		const std::map<int, std::string>& CopyOrEmptyReference()
+		const std::map<int, std::string> CopyOrEmptyReference()
 		{
-			return {};
+			std::map<int, std::string> RVO;
+			return RVO;
 		}
 	};
 
@@ -439,13 +460,32 @@ inline void Test::TestFunction()
 	std::string Str = "============ = over============ = ";
 	Print(Str);
 	std::cout << "cc" << Str << "\n";
-	Print(L"½áÊøÁË");
+	Print("game over");
 #ifdef MM
 	Print("MM");
 #else
 	Print("CC");
 #endif
+	InlineTest();
 
+   
+	Print("Empty Class: ",sizeof(EmpltyClass));
+
+
+	// Demonstrate using promise<int> to transmit a result between threads.
+	std::vector<int> numbers = { 1, 2, 3, 4, 5, 6 };
+	std::promise<int> accumulate_promise;
+	std::future<int> accumulate_future = accumulate_promise.get_future();
+	std::thread work_thread(accumulate, numbers.begin(), numbers.end(),
+		std::move(accumulate_promise));
+
+	// future::get() will wait until the future has a valid result and retrieves it.
+	// Calling wait() before get() is not needed
+	//accumulate_future.wait();  // wait for result
+	//std::cout << "thread result = " << accumulate_future.get() << '\n';
+	Print(accumulate_future.get());
+	work_thread.join();  // wait for thread completion
+	Print("Join work_thread");
 	delete base;
 }
 

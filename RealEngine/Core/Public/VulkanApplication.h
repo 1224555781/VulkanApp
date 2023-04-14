@@ -4,8 +4,11 @@
 #include <ostream>
 #include <vector>
 #include "Vulkan/Include/vulkan/vulkan_core.h"
+
+#include "Core/Public/template_test.h"
 #include "VulkanTypeDefine.h"
 
+#define RUNTIME_ERROR(S) throw std::runtime_error(S);
 
 struct FVulkanQueueFamily
 {
@@ -129,6 +132,16 @@ private:
     void CleanSwapChain();
 
 
+    void CreateTextureImage(const std::string& Path);
+    void CreateTextureImageView();
+    //创建视图对象给采样器 采样
+    VkImageView CreateImageView(VkImage image, VkFormat format);
+    void CreateTextureSampler();
+    void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+    void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+    VkCommandBuffer BeginSingleTimeCommands();
+    void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+    void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     /**
      * \brief 创建顶点缓冲区, 顶点暂存缓冲区
      */
@@ -140,7 +153,7 @@ private:
     /**
      * \brief 物理设备
      */
-    VkPhysicalDevice physical_device_;
+    VkPhysicalDevice GPU;
     /**
      * \brief Vulkan Instance
      */
@@ -235,6 +248,13 @@ private:
     std::vector < VkSemaphore >imageAvailableSemaphore;
     std::vector < VkSemaphore> renderFinishedSemaphore;
     std::vector < VkFence >inFlightFence;
+
+    // image render
+    VkImage textureImage;
+    VkDeviceMemory textureImageMemory;
+
+    VkImageView textureImageView;
+    VkSampler   textureSampler;
 
     int32 MaxFramInFight;
     int32 CurrentFrame;
