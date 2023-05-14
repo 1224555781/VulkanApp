@@ -1,0 +1,8 @@
+{
+  "configurations": [
+    {
+      "addressSanitizerEnabled": true,
+      "configurationType": "Debug"
+    }
+  ]
+}

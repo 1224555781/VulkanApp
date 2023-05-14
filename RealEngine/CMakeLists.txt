@@ -47,5 +47,7 @@ target_include_directories(RealEngine
   )
 
 
-  add_compile_options(-std=c++17)
+  add_compile_options(-std=c++20)
+  add_compile_options(/fsanitize=address)
+  add_compile_options(/Zi)
 # TODO: Add tests and install targets if needed.

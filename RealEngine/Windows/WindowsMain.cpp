@@ -13,13 +13,24 @@
 #include "Core/Public/VulkanApplication.h"
 
 
-//void* operator new(size_t size)
-//{
-//	Print("New Somthing");
-//	return malloc(size);
-//}
+void* operator new(size_t size)
+{
+	//Print("New Somthing");
+	return ::malloc(size);
+}
+
+void operator delete(void* Ptr)
+{
+	//Print("Delete ", Ptr);
+	::free(Ptr);
+}
+
+
+
+
 int main()
 {
+
 #if __cplusplus == 202002L
 	auto TemplateLamb = []<typename T>(T t, auto && U)->decltype(auto) { return t + U; };
 

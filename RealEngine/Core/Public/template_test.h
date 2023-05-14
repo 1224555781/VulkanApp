@@ -374,12 +374,33 @@ inline void accumulate(std::vector<int>::iterator first,
 	accumulate_promise.set_value(sum);  // Notify future
 }
 
+// __restrict 关键字对clang 11 是没用的  gcc12.1 有优化 
+inline void RestrictFunc(int* __restrict restrictPtr,float const * constPtr)
+{
+	int* __restrict RestrictTest_Internal = restrictPtr;
+}
+
+
 inline void Test::TestFunction()
 {
-	Print(633, "WUJIE", 59);
+
+	//MLBClass Class;
+	//Func g = &MLBClass::Function;
+
+
+	//typedef void func(void);
+	//Func* f = (Func*)0x7FF7C320114028;
+	//(Class.*g)();
+	
+	float* TestNewFloat = new float[2]{0.f};
+
 	auto temp = binary<102>::value;
 	Print(temp);
 	Print(4 | 1);
+	delete []TestNewFloat;
+
+	Print(::sqrt( 2));
+	delete &TestNewFloat[3];
 	int&& testRightint = 3;
 	int& p = testRightint;
 	std::string Result = _Is_Reference_<decltype(3)>::value ? "true" : "false";

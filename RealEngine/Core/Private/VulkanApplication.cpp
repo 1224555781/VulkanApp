@@ -8,7 +8,7 @@
 
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "Core/Public/stb_image.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -1021,7 +1021,9 @@ void VulkanApplication::UpdateUniformBuffer(uint32 InCurrentFrame)
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
     FUniformBufferObject MVP{};
-    MVP.model = glm::rotate(glm::mat4(1.0f),glm::radians(90.f), glm::vec3(0, 0, 1));
+    //MVP.model = glm::rotate(glm::mat4(1.0f),glm::radians(90.f), glm::vec3(0, 0, 1));
+
+    MVP.model = glm::mat4(1.f);
     MVP.view = glm::lookAt(glm::vec3(1.0, 1.0, 1.0), glm::vec3(0., 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
     MVP.proj = glm::perspective<float>(glm::radians(45.f), static_cast<float>(swapChainExtent.width/swapChainExtent.height), 0.1f, 10.f);
     MVP.proj[1][1] *= -1;
