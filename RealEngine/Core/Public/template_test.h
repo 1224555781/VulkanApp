@@ -3,6 +3,13 @@
 #include <future>
 #include <map>
 #include <numeric>
+#include <iostream>
+
+
+// DLL export and import definitions
+#define DLLEXPORT __declspec(dllexport)
+#define DLLIMPORT __declspec(dllimport)
+
 
 template<typename T,typename ...Args>
 void Print(T&& Param,const Args& ...args)
@@ -355,7 +362,7 @@ public:
 inline Test* Test::template_test = new Test();
 
 inline void InlineTest() {
-	Print(printf("MLB %llu\n", _AddressOfReturnAddress()));
+	Print(printf("MLB %p\n", _AddressOfReturnAddress()));
 }
 
 
@@ -380,13 +387,23 @@ inline void RestrictFunc(int* __restrict restrictPtr,float const * constPtr)
 	int* __restrict RestrictTest_Internal = restrictPtr;
 }
 
+class MLBClass
+{
+public:
+	MLBClass() {
+		Print("MLB Cotr");
+	}
+
+private:
+
+};
+
 
 inline void Test::TestFunction()
 {
-
-	//MLBClass Class;
+	Print("Start MLB Cotr");
+	MLBClass*  C = new MLBClass;
 	//Func g = &MLBClass::Function;
-
 
 	//typedef void func(void);
 	//Func* f = (Func*)0x7FF7C320114028;
@@ -397,10 +414,14 @@ inline void Test::TestFunction()
 	auto temp = binary<102>::value;
 	Print(temp);
 	Print(4 | 1);
-	delete []TestNewFloat;
+	std::cout << std::hex << TestNewFloat<<"\n";
+	Print(printf("TestNewFloat address %p", TestNewFloat));
+	//测试 堆栈益处   AddressSan
+	//TestNewFloat[2] = 58.f;
+	//delete []TestNewFloat;
 
 	Print(::sqrt( 2));
-	delete &TestNewFloat[3];
+	
 	int&& testRightint = 3;
 	int& p = testRightint;
 	std::string Result = _Is_Reference_<decltype(3)>::value ? "true" : "false";
@@ -508,6 +529,7 @@ inline void Test::TestFunction()
 	work_thread.join();  // wait for thread completion
 	Print("Join work_thread");
 	delete base;
+	delete[]TestNewFloat;
 }
 
 // 多个cpp 包含 会在每个cpp生成一个实体  内存开销++

@@ -7,14 +7,18 @@ set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB_RECURSE CORE_SOURCE "./Core/Private/*.cpp")
 file(GLOB_RECURSE CORE_HEADER "./Core/Public/*.h")
+file(GLOB_RECURSE SOURCE_SOURCE "./Source/Private/*.cpp")
+file(GLOB_RECURSE SOURCE_HEADER "./Source/Public/*.h")
 # Add source to this project's executable.
-add_executable (RealEngine "Windows/WindowsMain.cpp"  ${CORE_SOURCE} ${CORE_HEADER})
+add_executable (RealEngine "Windows/WindowsMain.cpp"  ${CORE_SOURCE} 
+${CORE_HEADER} ${SOURCE_SOURCE} ${SOURCE_HEADER})
 
 project(RealEngine)
 
 #target_link_libraries(RealEngine ${CMAKE_CURRENT_SOURCE_DIR} vulkan-1.lib)
 
 add_subdirectory(Core)
+add_subdirectory(Source)
 add_subdirectory(GLFW)
 
 
@@ -46,8 +50,19 @@ target_include_directories(RealEngine
     ${CMAKE_CURRENT_LIST_DIR}
   )
 
+ set(CMAKE_C_COMPILER "clang")
+ set(CMAKE_CXX_COMPILER "C:/Program Files/LLVM/bin")
 
-  add_compile_options(-std=c++20)
-  add_compile_options(/fsanitize=address)
-  add_compile_options(/Zi)
+ if (MSVC)
+    # warning level 4
+    add_compile_options(RealEngine PUBLIC /W4 /fsanitize=address /Zi)
+    #add_compile_options(-std=c++20)
+    #add_compile_options(/fsanitize=address)
+    add_compile_options(/Zi)
+else()
+    # additional warnings
+    add_compile_options(RealEngine PUBLIC /W4 /fsanitize=address /Zi)
+    #add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 # TODO: Add tests and install targets if needed.

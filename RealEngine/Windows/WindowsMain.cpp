@@ -15,7 +15,7 @@
 
 void* operator new(size_t size)
 {
-	//Print("New Somthing");
+	Print("New Somthing");
 	return ::malloc(size);
 }
 

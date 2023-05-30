@@ -4,6 +4,7 @@
 #include <vulkan/vulkan_core.h>
 //~ Unsigned base types
 
+#define check(expr) assert(expr)
 	// 8-bit unsigned integer
 typedef unsigned char 		uint8;
 
@@ -47,8 +48,14 @@ typedef uint16				CHAR16;
 // A 32-bit character type. In-memory only. 32-bit representation. Should really be char32_t but making this the generic option is easier for compilers which don't fully support C++11 yet (i.e. MSVC).
 typedef uint32				CHAR32;
 
+// A switchable character. In-memory only. Either ANSICHAR or WIDECHAR, depending on a licensee's requirements.
+typedef WIDECHAR			TCHAR;
+
+
 typedef int32					TYPE_OF_NULL;
 typedef decltype(nullptr)		TYPE_OF_NULLPTR;
+
+
 
 
 
