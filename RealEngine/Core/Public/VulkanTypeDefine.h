@@ -48,8 +48,33 @@ typedef uint16				CHAR16;
 // A 32-bit character type. In-memory only. 32-bit representation. Should really be char32_t but making this the generic option is easier for compilers which don't fully support C++11 yet (i.e. MSVC).
 typedef uint32				CHAR32;
 
+#ifdef TCHAR
+#undef TCHAR
+#endif
+
+
+using  FVector3f   = glm::vec<3, float, glm::defaultp>;
+
+using  FVector2f   = glm::vec<2, float, glm::defaultp>;
+
+using FVector3d = glm::vec<3, double, glm::defaultp>;
+
+using FVector2d = glm::vec<2, double, glm::defaultp>;
+
+template<typename T>
+using  FVector  = glm::vec<3, T, glm::defaultp>;
+
+template<typename T>
+using  FVector2 = glm::vec<2, T, glm::defaultp>;
+
+
+using FMatrix4 = glm::mat<4, 4, float, glm::defaultp>;
+
+using FMatrix3 = glm::mat<3,3, float, glm::defaultp>;
+
+using FMatrix2 = glm::mat<2, 2, float, glm::defaultp>;
 // A switchable character. In-memory only. Either ANSICHAR or WIDECHAR, depending on a licensee's requirements.
-typedef WIDECHAR			TCHAR;
+//typedef WIDECHAR			TCHAR;
 
 
 typedef int32					TYPE_OF_NULL;
@@ -62,9 +87,9 @@ typedef decltype(nullptr)		TYPE_OF_NULLPTR;
 
 #define offset(s,m) ((::size_t)&reinterpret_cast<char const volatile&>(static_cast<s*>(nullptr)->m))
 struct Vertex {
-    glm::vec2 pos;
-    glm::vec3 color;
-    glm::vec2 texCoord;
+    FVector3f pos;
+    FVector3f color;
+    FVector2f texCoord;
 
     static VkVertexInputBindingDescription GetBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};

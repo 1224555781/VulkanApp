@@ -5,6 +5,7 @@
 #include <numeric>
 #include <iostream>
 
+#include "VulkanTypeDefine.h"
 
 // DLL export and import definitions
 #define DLLEXPORT __declspec(dllexport)
@@ -381,42 +382,146 @@ inline void accumulate(std::vector<int>::iterator first,
 	accumulate_promise.set_value(sum);  // Notify future
 }
 
-// __restrict ¹Ø¼ü×Ö¶Ôclang 11 ÊÇÃ»ÓÃµÄ  gcc12.1 ÓĞÓÅ»¯ 
+// ___restrict å…³é”®å­—åœ¨ clang 11 ä¸­ä¸å¯ç”¨ï¼Œåœ¨ gcc 12.1 ä¸­å¯ç”¨
 inline void RestrictFunc(int* __restrict restrictPtr,float const * constPtr)
 {
 	int* __restrict RestrictTest_Internal = restrictPtr;
 }
 
+
+inline int memTest()
+{
+	int a;
+	std::cin >> a;
+	return a;
+}
+
 class MLBClass
 {
 public:
+
+	int _m = ::memTest();
+
 	MLBClass() {
 		Print("MLB Cotr");
 	}
+
+	~MLBClass()
+	{
+		Print("MLB Dtor");
+	}
+
+    static void StaticFuncTest();
 
 private:
 
 };
 
+ //  ADL Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½
+namespace ADLTest 
+{
+	struct MyStruct
+	{
+
+	};
+
+	inline  void ADL( MyStruct Arg)
+	{
+
+	}
+}
+
+inline void ADL(ADLTest::MyStruct Arg)
+{
+
+}
+
+// if some code read padding address, it will cause crash?
+struct alignas(32) FStructWithPadding
+{
+	int FirstAddress;
+    char* SecondAddress;
+};
+
+
+class FBaseClass
+{
+public:
+	
+    virtual ~FBaseClass() = default;
+protected:
+	int* MemberClass = nullptr;
+};
+
+
+class FDerivedClass final:public FBaseClass
+{
+public:
+    FDerivedClass()
+    {
+        MemberClass = new int(5);
+    }
+
+	virtual ~FDerivedClass() override
+    {
+        delete MemberClass;
+    }
+};
 
 inline void Test::TestFunction()
 {
-	Print("Start MLB Cotr");
-	MLBClass*  C = new MLBClass;
-	//Func g = &MLBClass::Function;
 
+	ADLTest::MyStruct adltest;
+	(ADL)(adltest);
+
+
+#pragma region ReadPaddingAddress
+	FStructWithPadding StructWithPadding{};
+	uint8* StartAddress = reinterpret_cast<uint8*>(&StructWithPadding);
+	StartAddress += 16;
+	uint8 V_Padding = *StartAddress;
+#pragma endregion
+
+#pragma region ReadPaddingAddress
+
+    FBaseClass* BaseClass = new FDerivedClass();
+
+    delete BaseClass;
+#pragma endregion
+
+#pragma region ReadPaddingAddress
+	int a = 10;
+	int b = 20;
+	int result;
+
+
+	__asm {
+		mov eax, a;    // å°†å˜é‡ a çš„å€¼ç§»åŠ¨åˆ° eax å¯„å­˜å™¨
+		add eax, b;   // å°†å˜é‡ b çš„å€¼åŠ åˆ° eax å¯„å­˜å™¨
+		mov result, eax;// å°† eax å¯„å­˜å™¨çš„å€¼ç§»åŠ¨åˆ° result å˜é‡
+	}
+
+    Print(result);
+#pragma endregion
+	Print("Start MLB Cotr");
+	//MLBClass* C = new MLBClass;
+	//Func g = &MLBClass::Function;
 	//typedef void func(void);
 	//Func* f = (Func*)0x7FF7C320114028;
 	//(Class.*g)();
-	
+	//MLBClass* d = new (C)MLBClass();
 	float* TestNewFloat = new float[2]{0.f};
+
+	float* PNewFloat = new (TestNewFloat) float(5.f);
 
 	auto temp = binary<102>::value;
 	Print(temp);
 	Print(4 | 1);
 	std::cout << std::hex << TestNewFloat<<"\n";
 	Print(printf("TestNewFloat address %p", TestNewFloat));
-	//²âÊÔ ¶ÑÕ»Òæ´¦   AddressSan
+	Print(printf("TestNewFloat address %p", PNewFloat));
+	Print(printf("TestNewFloat address %f", *PNewFloat));
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Õ»ï¿½æ´¦   AddressSan
 	//TestNewFloat[2] = 58.f;
 	//delete []TestNewFloat;
 
@@ -424,7 +529,7 @@ inline void Test::TestFunction()
 	
 	int&& testRightint = 3;
 	int& p = testRightint;
-	std::string Result = _Is_Reference_<decltype(3)>::value ? "true" : "false";
+	std::string Result = _Is_Reference_<decltype(321)>::value ? "true" : "false";
 	Print(Result);
 
 	Print(std::is_same<int, float>::value ? "true" : "false");
@@ -532,11 +637,14 @@ inline void Test::TestFunction()
 	delete[]TestNewFloat;
 }
 
-// ¶à¸öcpp °üº¬ »áÔÚÃ¿¸öcppÉú³ÉÒ»¸öÊµÌå  ÄÚ´æ¿ªÏú++
+
+// ceate a new one when  include this .h once;
 //static int a = 1;
 
-//¶à¸öcpp °üº¬ - Íâ²¿Á´½Ó - »á²úÉúÁ´½Ó´íÎó 
+// link error if include twice
 // int  a = 1;
 
-// ÄÚ²¿Á´½Ó ÎŞÊÓ¶à¸öcpp °üº¬
+// valid in one module include multi , other module will create new one
 // inline int a =1;
+
+//inline  MLBClass* TestClass = new MLBClass;

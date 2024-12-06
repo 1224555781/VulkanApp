@@ -15,8 +15,9 @@
 
 void* operator new(size_t size)
 {
-	Print("New Somthing");
-	return ::malloc(size);
+	void* ReturnAddress = ::malloc(size);
+	Print("New Somthing %p", ReturnAddress);
+	return ReturnAddress;
 }
 
 void operator delete(void* Ptr)
@@ -24,7 +25,6 @@ void operator delete(void* Ptr)
 	//Print("Delete ", Ptr);
 	::free(Ptr);
 }
-
 
 
 

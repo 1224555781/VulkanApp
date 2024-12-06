@@ -1,11 +1,8 @@
-
-// 对齐规则======
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #define GLFW_INCLUDE_VULKAN
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define  MM ()
-
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "Core/Public/stb_image.h"
@@ -45,10 +42,10 @@ const std::vector<const char*> validationLayers = {
 
 
 const std::vector<Vertex> vertices = {
-    {{0.5f, .5f}, {1.0f, 1.0f, 1.0f},{1.f,0.f}},
+  /*  {{0.5f, .5f}, {1.0f, 1.0f, 1.0f},{1.f,0.f}},
     {{-0.5f, 0.5f}, {1.0f, 0.0f, 0.0f},{0.f,0.f}},
     {{-0.5f, -0.5f}, {0.0f, 1.0f, 0.0f},{0.f,1.f}},
-    {{0.5f, -0.5f}, {0.0f, 0.0f, 1.0f},{1.f,1.f}}
+    {{0.5f, -0.5f}, {0.0f, 0.0f, 1.0f},{1.f,1.f}}*/
 };
 
 const std::vector<uint32> indices = {
@@ -107,7 +104,7 @@ void VulkanApplication::FindPhysicalDevice()
 
 void VulkanApplication::DrawFrame()
 {
-    //等待上一帧完成
+    //??????????
     vkWaitForFences(device_, 1, &inFlightFence[CurrentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
@@ -569,16 +566,16 @@ void VulkanApplication::CreateGraphicsPipeline()
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.depthClampEnable = VK_FALSE;
-    // 禁用光栅器,禁用了对帧缓冲区的任何输出。
+    // ???锟斤拷????,?????????????????锟斤拷??????
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
 
-    //VK_POLYGON_MODE_FILL：用片段填充多边形的区域
-    //VK_POLYGON_MODE_LINE：多边形边被绘制为线
-	//VK_POLYGON_MODE_POINT：多边形顶点绘制为点
+    //VK_POLYGON_MODE_FILL?????????????锟斤拷?????
+    //VK_POLYGON_MODE_LINE??????锟斤拷?????????
+	//VK_POLYGON_MODE_POINT??????锟斤拷?????????
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 
-    // 它根据片段数描述线条的粗细。支持的最大线宽取决于硬件和任何比1.0f要求您启用wideLinesGPU 功能更粗的线
+    // ??????????????????????????????????????????????锟绞︼拷?1.0f?????????wideLinesGPU ??????????
     rasterizer.lineWidth = 1.0f;
 
     
@@ -589,7 +586,7 @@ void VulkanApplication::CreateGraphicsPipeline()
     rasterizer.depthBiasClamp = 0.0f; // Optional
     rasterizer.depthBiasSlopeFactor = 0.0f; // Optional
 
-    //多重采样  --- 
+    //???????  --- 
     VkPipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE;
@@ -600,7 +597,7 @@ void VulkanApplication::CreateGraphicsPipeline()
     multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
 
-    // blendEnable 选择是否开启 alpha通道的blend
+    // blendEnable ???????? alpha?????blend
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT ;
     colorBlendAttachment.blendEnable = VK_TRUE;
@@ -692,13 +689,13 @@ void VulkanApplication::CreateCommandPool()
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 
-    //VK_COMMAND_POOL_CREATE_TRANSIENT_BIT：提示命令缓冲区经常用新命令重新记录（可能会改变内存分配行为)
-    //VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT : 允许单独重新记录命令缓冲区，如果没有这个标志，它们都必须一起重置
+    //VK_COMMAND_POOL_CREATE_TRANSIENT_BIT?????????????????????????????????????????????????)
+    //VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT : ????????????????????????????????????????????????????
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolInfo.queueFamilyIndex = queueFamilyIndices.GetGraphicsValue();
 
     if (vkCreateCommandPool(device_, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-        RUNTIME_ERROR("failed to create command pool!");
+        RUNTIME_ERROR("failed to create command pool!")
     }
 }
 
@@ -710,8 +707,8 @@ void VulkanApplication::CreateCommandBuffer()
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = commandPool;
 
-    //VK_COMMAND_BUFFER_LEVEL_PRIMARY: 可以提交到队列执行，但不能从其他命令缓冲区调用。
-    //VK_COMMAND_BUFFER_LEVEL_SECONDARY: 不能直接提交，但可以从主命令缓冲区调用。
+    //VK_COMMAND_BUFFER_LEVEL_PRIMARY: ??????????????锟斤拷???????????????????????锟斤拷?
+    //VK_COMMAND_BUFFER_LEVEL_SECONDARY: ???????????????????????????????锟斤拷?
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = MaxFramInFight;
 
@@ -736,7 +733,7 @@ void VulkanApplication::CreateVertexBuffer()
 
     void* data = nullptr;
     vkMapMemory(device_, StagingVertexMem, 0, bufferSize, 0, &data);
-    //将数据拷贝到内存映射到GPU的区域
+    //?????????????????GPU??????
     memcpy(data, vertices.data(), bufferSize);
     vkUnmapMemory(device_, StagingVertexMem);
 
@@ -764,7 +761,7 @@ void VulkanApplication::CreateIndexBufffer()
 
     void* data = nullptr;
     vkMapMemory(device_, StagingVertexMem, 0, bufferSize, 0, &data);
-    //将数据拷贝到内存映射到GPU的区域
+    //?????????????????GPU??????
     memcpy(data, indices.data(), bufferSize);
     vkUnmapMemory(device_, StagingVertexMem);
 
@@ -795,7 +792,7 @@ void VulkanApplication::CreateDescriptorSetLayout()
     samplerLayoutBinding.descriptorCount = 1;
     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     samplerLayoutBinding.pImmutableSamplers = nullptr;
-    //确保设置 stageFlags 以指示我们打算在片段着色器中使用组合的图像采样器描述符。
+    //??????? stageFlags ??????????????????????????????????????????????
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
     std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
@@ -924,7 +921,7 @@ void VulkanApplication::CopyBuffer(VkBuffer DstBuffer, VkBuffer SrcBuffer, VkDev
     vkCmdCopyBuffer(command_buffer, SrcBuffer, DstBuffer, 1, &BufferCopy);
 
 
-    //需要立即提交 推送copybuffer 并等待任务完成,让显卡可以读到最佳内存位置的顶点信息
+    //????????? ????copybuffer ????????????,??????????????????锟斤拷?????????
     EndSingleTimeCommands(command_buffer);
 }
 
@@ -933,10 +930,10 @@ void VulkanApplication::RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uin
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    //VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT：命令缓冲区执行一次后会立即重新记录。
-    //VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT：这是一个辅助命令缓冲区，将完全在单个渲染过程中。
-    //VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT：命令缓冲区可以在它也已经挂起执行时重新提交
-    beginInfo.flags = 0; // 画三角形 用不到这些标志----
+    //VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT???????????????锟斤拷??????????????
+    //VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT?????????????????????????????????????????锟斤拷?
+    //VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT????????????????????????????????????
+    beginInfo.flags = 0; // ???????? ?锟斤拷?????锟斤拷???----
     beginInfo.pInheritanceInfo = nullptr; // Optional
 
     if (vkBeginCommandBuffer(InCommandBuffer, &beginInfo) != VK_SUCCESS) {
@@ -954,8 +951,8 @@ void VulkanApplication::RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uin
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
-    //VK_SUBPASS_CONTENTS_INLINE：渲染过程命令将嵌入主命令缓冲区本身，不会执行辅助命令缓冲区。
-    //////VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS：渲染过程命令将从辅助命令缓冲区执行
+    //VK_SUBPASS_CONTENTS_INLINE????????????????????????????????????锟斤拷?????????????
+    //////VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS?????????????????????????????
     ///
     vkCmdBeginRenderPass(InCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -981,9 +978,9 @@ void VulkanApplication::RecordCommandBuffer(VkCommandBuffer InCommandBuffer, uin
 
 	    vkCmdBindIndexBuffer(InCommandBuffer, IndicesBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-	    //绑定描述符集
+	    //??????????
 	    vkCmdBindDescriptorSets(InCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[CurrentFrame], 0, nullptr);
-	    //执行渲染命令
+	    //??????????
 	    vkCmdDrawIndexed(InCommandBuffer,static_cast<uint32>( indices.size()),1,0,0,0);
 	vkCmdEndRenderPass(InCommandBuffer);
 
@@ -1022,31 +1019,21 @@ void VulkanApplication::UpdateUniformBuffer(uint32 InCurrentFrame)
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
     FUniformBufferObject MVP{};
     //MVP.model = glm::rotate(glm::mat4(1.0f),glm::radians(90.f), glm::vec3(0, 0, 1));
-
     MVP.model = glm::mat4(1.f);
     MVP.view = glm::lookAt(glm::vec3(1.0, 1.0, 1.0), glm::vec3(0., 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
- /*   MVP.proj = glm::perspective<float>(glm::radians(45.f), static_cast<float>(swapChainExtent.width/swapChainExtent.height), 0.1f, 10.f);
-    MVP.proj[1][1] *= -1;*/
-    MVP.proj = glm::mat4{
-       glm::vec4{ 0,0,0,0},
-       glm::vec4{ 0,0,0,0},
-       glm::vec4{ 0,0,0,0},
-       glm::vec4{ -1,1,0.5,1},
-
-    };
+    MVP.proj = glm::perspective<float>(glm::radians(45.f), static_cast<float>(swapChainExtent.width / swapChainExtent.height), 0.1f, 10.f);
+    MVP.proj[1][1] *= -1;
     memcpy(uniformBuffersMapped[InCurrentFrame], &MVP, sizeof(MVP));
 }
 
 uint32 VulkanApplication::FindMemeoryType(uint32 typeFilter, VkMemoryPropertyFlags property)
 {
-    
-
     VkPhysicalDeviceMemoryProperties physical_device_memory;
     vkGetPhysicalDeviceMemoryProperties(GPU, &physical_device_memory);
 
     for (uint32 i =0; i< physical_device_memory.memoryTypeCount;++i)
     {
-        //检测内存位置 和 属性是否满足要求
+        //??????锟斤拷?? ?? ??????????????
         if (typeFilter & (1<<i) && (physical_device_memory.memoryTypes[i].propertyFlags & property) == property)
         {
             return i;
@@ -1165,7 +1152,7 @@ void VulkanApplication::CreateTextureImage(const std::string& Path)
 
 
     ////
-    /// 将texture数据存储到GPU可读的内存区域
+    /// copy texture to gpu
 
     CreateImage(textureWidth, textureHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 0, textureImage, textureImageMemory);
@@ -1194,17 +1181,17 @@ void VulkanApplication::CreateTextureSampler()
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 
-    //使用各向异性过滤
+    //?????????????
     samplerInfo.anisotropyEnable = VK_TRUE;
 
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(GPU, &properties);
     samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
     samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
-    //采用 [0-1]采用为标准模式 百分比   -  非标准模式则为 [0-width]绝对值
+    //???? [0-1]?????????? ????   -  ????????? [0-width]?????
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-    //启用了比较功能，则将首先将纹素与值进行比较，并将该比较的结果用于筛选操作。这主要用于阴影贴图上的百分比接近过滤
+    //?????????????????????????????锟斤拷?????????????????????????????????????????????????????
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 
@@ -1444,16 +1431,11 @@ void VulkanApplication::Destroy()
         vkDestroyFence(device_, inFlightFence[i], nullptr);
     }
     vkDestroyCommandPool(device_, commandPool, nullptr);
-   
-
 
     vkDestroyPipeline(device_, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device_, pipelineLayout, nullptr);
 
     vkDestroyRenderPass(device_, renderPass, nullptr);
-
-   
-
     vkDestroyInstance(Instance, nullptr);
 
     glfwDestroyWindow(window);

@@ -125,7 +125,7 @@ private:
 
     uint32 FindMemeoryType(uint32 typeFilter, VkMemoryPropertyFlags property);
     /**
-     * \brief ´¦ÀíÇĞ»»ÊÓ¿Ú´óĞ¡- ÖØĞÂ´´½¨½»»»Á´
+     * \brief å¤„ç†åˆ‡æ¢è§†å£å¤§å°- é‡æ–°åˆ›å»ºäº¤æ¢é“¾
      */
     void ReCreateSwapChain();
 
@@ -134,7 +134,7 @@ private:
 
     void CreateTextureImage(const std::string& Path);
     void CreateTextureImageView();
-    //´´½¨ÊÓÍ¼¶ÔÏó¸ø²ÉÑùÆ÷ ²ÉÑù
+    //åˆ›å»ºè§†å›¾å¯¹è±¡ç»™é‡‡æ ·å™¨ é‡‡æ ·
     VkImageView CreateImageView(VkImage image, VkFormat format);
     void CreateTextureSampler();
     void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
@@ -143,7 +143,7 @@ private:
     void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
     void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     /**
-     * \brief ´´½¨¶¥µã»º³åÇø, ¶¥µãÔİ´æ»º³åÇø
+     * \brief åˆ›å»ºé¡¶ç‚¹ç¼“å†²åŒº, é¡¶ç‚¹æš‚å­˜ç¼“å†²åŒº
      */
     void CreateBuffer(VkDeviceSize DeviceSize,VkBufferUsageFlags Usage,VkMemoryPropertyFlags Property_flags,VkBuffer& Buffer,VkDeviceMemory& BufferMemory);
 
@@ -151,7 +151,7 @@ private:
 private:
     VkDebugUtilsMessengerEXT debugMessenger;
     /**
-     * \brief ÎïÀíÉè±¸
+     * \brief ç‰©ç†è®¾å¤‡
      */
     VkPhysicalDevice GPU;
     /**
@@ -165,25 +165,25 @@ private:
     struct GLFWwindow* window;
 
     /**
-     * \brief Âß¼­Éè±¸
+     * \brief é€»è¾‘è®¾å¤‡
      */
     VkDevice device_;
 
 
     /**
-     * \brief ÇÅ½ÓÌØ¶¨ÏµÍ³
+     * \brief æ¡¥æ¥ç‰¹å®šç³»ç»Ÿ
      */
     VkSurfaceKHR surface_khr_;
 
 
     /**
-     * \brief äÖÈ¾¶ÓÁĞ
+     * \brief æ¸²æŸ“é˜Ÿåˆ—
      */
     VkQueue graphicsQueue;
     VkQueue presentQueue;
 
     /**
-     * \brief ´´½¨½»»»Á´
+     * \brief åˆ›å»ºäº¤æ¢é“¾
      */
     VkSwapchainKHR swapChain;
     std::vector<VkImage> swapChainImages;
@@ -192,28 +192,28 @@ private:
 
 
     /**
-     * \brief Í¼ÏñÏÔÊ¾
+     * \brief å›¾åƒæ˜¾ç¤º
      */
     std::vector<VkImageView> swapChainImageViews;
 
 
     /**
-     * \brief ¹ÜµÀ²¼¾Ö
+     * \brief ç®¡é“å¸ƒå±€
      */
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkRenderPass renderPass;
-    // Í¼ĞÎ¹ÜµÀ
+    // å›¾å½¢ç®¡é“
     VkPipeline graphicsPipeline;
 
     
     /**
-     * \brief Ö¡»º³åÇø, Ö¡»º³åÇø¶ÔÏóÒıÓÃ VkImageView´ú±í¸½¼şµÄËùÓĞ¶ÔÏó
+     * \brief å¸§ç¼“å†²åŒº, å¸§ç¼“å†²åŒºå¯¹è±¡å¼•ç”¨ VkImageViewä»£è¡¨é™„ä»¶çš„æ‰€æœ‰å¯¹è±¡
      */
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
 
-    //ÃüÁî»º³åÇø--·¢ËÍ»æÖÆÃüÁî
+    //å‘½ä»¤ç¼“å†²åŒº--å‘é€ç»˜åˆ¶å‘½ä»¤
     VkCommandPool commandPool;
 
     //
@@ -221,30 +221,30 @@ private:
 
 
     /**
-     * \brief Í¨ÓÃ»º´æÇøÓò ÃèÊö·û¼¯
+     * \brief é€šç”¨ç¼“å­˜åŒºåŸŸ æè¿°ç¬¦é›†
      */
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
     /**
-     * \brief Í¨ÓÃ»º³åÇø---ÓÃÓÚ Ê¾Àı: ÊµÊ±Ë¢ĞÂMVP ¾ØÕóÊı¾İ - view ÊµÊ±»á±ä
+     * \brief é€šç”¨ç¼“å†²åŒº---ç”¨äº ç¤ºä¾‹: å®æ—¶åˆ·æ–°MVP çŸ©é˜µæ•°æ® - view å®æ—¶ä¼šå˜
      */
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<void*> uniformBuffersMapped;
 
     /**
-     * \brief ¶¥µãbuffer
+     * \brief é¡¶ç‚¹buffer
      */
     VkBuffer VertexBuffer;
     VkDeviceMemory VertexMem;
 
     /**
-     * \brief Ë÷Òıbuffer
+     * \brief ç´¢å¼•buffer
      */
     VkBuffer IndicesBuffer;
     VkDeviceMemory IndicesMem;
 
-    //ĞÅºÅÁ¿ ÓÃÀ´¿ØÖÆäÖÈ¾
+    //ä¿¡å·é‡ ç”¨æ¥æ§åˆ¶æ¸²æŸ“
     std::vector < VkSemaphore >imageAvailableSemaphore;
     std::vector < VkSemaphore> renderFinishedSemaphore;
     std::vector < VkFence >inFlightFence;
