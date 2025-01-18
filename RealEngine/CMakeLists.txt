@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
-set(CMAKE_CXX_STANDARD 17)
+
 
 file(GLOB_RECURSE CORE_SOURCE "./Core/Private/*.cpp")
 file(GLOB_RECURSE CORE_HEADER "./Core/Public/*.h")
@@ -14,6 +14,30 @@ add_executable (RealEngine "Windows/WindowsMain.cpp"  ${CORE_SOURCE}
 ${CORE_HEADER} ${SOURCE_SOURCE} ${SOURCE_HEADER})
 
 project(RealEngine)
+
+
+# 设置 C++ 标准
+set(CMAKE_CXX_STANDARD 17)
+
+# 设置 Clang 编译器路径
+set(CMAKE_C_COMPILER "C:/Program Files/LLVM/bin/clang.exe")
+set(CMAKE_CXX_COMPILER "C:/Program Files/LLVM/bin/clang++.exe")
+
+
+# 设置编译器标志
+set(CMAKE_CXX_FLAGS "-Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_MINSIZEREL "-Os -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O4 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
+
+# 设置其他工具路径
+set(CMAKE_AR "C:/Program Files/LLVM/bin/llvm-ar.exe")
+set(CMAKE_LINKER "C:/Program Files/LLVM/bin/llvm-ld.exe")
+set(CMAKE_NM "C:/Program Files/LLVM/bin/llvm-nm.exe")
+set(CMAKE_OBJDUMP "C:/Program Files/LLVM/bin/llvm-objdump.exe")
+set(CMAKE_RANLIB "C:/Program Files/LLVM/bin/llvm-ranlib.exe")
+
 
 #target_link_libraries(RealEngine ${CMAKE_CURRENT_SOURCE_DIR} vulkan-1.lib)
 
@@ -50,8 +74,8 @@ target_include_directories(RealEngine
     ${CMAKE_CURRENT_LIST_DIR}
   )
 
- set(CMAKE_C_COMPILER "clang")
- set(CMAKE_CXX_COMPILER "C:/Program Files/LLVM/bin")
+ #set(CMAKE_C_COMPILER "clang")
+ #set(CMAKE_CXX_COMPILER "C:/Program Files/LLVM/bin")
 
  if (MSVC)
     # warning level 4
