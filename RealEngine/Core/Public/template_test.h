@@ -468,6 +468,33 @@ public:
     }
 };
 
+
+
+class FASMTest {
+public:
+	FASMTest(int a, int b) {
+		std::cout << "Constructor called with a = " << a << " and b = " << b << std::endl;
+	}
+
+	~FASMTest() {
+		std::cout << "Destructor called" << std::endl;
+	}
+
+	void MyMemberFunction() {
+		std::cout << "MyMemberFunction called" << std::endl;
+	}
+};
+
+
+class FMath
+{
+    /** Returns higher value in a generic way */
+    template <class T>
+    static constexpr inline T Max(const T A, const T B)
+    {
+        return (A >= B) ? A : B;
+    }
+};
 inline void Test::TestFunction()
 {
 
@@ -489,17 +516,39 @@ inline void Test::TestFunction()
     delete BaseClass;
 #pragma endregion
 
-#pragma region ReadPaddingAddress
+#pragma region SIMD
 	int a = 10;
 	int b = 20;
 	int result;
 
-
+	FASMTest* obj;
 	__asm {
 		mov eax, a;    // 将变量 a 的值移动到 eax 寄存器
 		add eax, b;   // 将变量 b 的值加到 eax 寄存器
 		mov result, eax;// 将 eax 寄存器的值移动到 result 变量
+
+
+
+		// Allocate memory for the object
+		push b
+			push a
+			call FASMTest::FASMTest
+			mov obj, eax
+
+			// Call the member function
+			mov ecx, obj
+			call FASMTest::MyMemberFunction
+
+			// Call the destructor
+			mov ecx, obj
+			call FASMTest::~FASMTest
+
+			// Free the memory
+			add esp, 8
 	}
+
+	float X,Y; 
+	FMath::Max(X, Y);
 
     Print(result);
 #pragma endregion
@@ -542,10 +591,6 @@ inline void Test::TestFunction()
 	Print(HasMember<bool_value_true>::value ? "true" : "false");
 	MLB_Tuple(3, "aaa");
 
-	//CommonT T = 3;
-	std::any an = 10;
-	auto te = std::any_cast<int>(an);
-	Print(te);
 
 	//MultiThreadTest MultiThread;
 	//MultiThread.Run();

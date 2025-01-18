@@ -7,6 +7,7 @@
 
 #include "Core/Public/template_test.h"
 #include "VulkanTypeDefine.h"
+#include <optional>
 
 #define RUNTIME_ERROR(S) throw std::runtime_error(S);
 

@@ -29,7 +29,7 @@ std::vector<uint8> FPlatformFile::ReadFileToBinary(const std::string& path)
     }
     std::basic_ifstream<uint8, std::char_traits<uint8>> file(TargetPath, std::ios::ate | std::ios::binary);
     if (!file.is_open()) {
-        throw std::runtime_error("failed to open file!");
+        //throw std::runtime_error("failed to open file!");
     }
 
     int32 fileSize = (size_t)file.tellg();
