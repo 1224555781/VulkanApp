@@ -12,6 +12,11 @@
 #define DLLIMPORT __declspec(dllimport)
 
 
+
+
+
+
+
 template<typename T,typename ...Args>
 void Print(T&& Param,const Args& ...args)
 {
@@ -339,28 +344,7 @@ public:
 
 };
 
-class Test
-{
-public:
 
-
-	Test()
-	{
-		Print("Test Construct===");
-		const int& a = 10;
-		//int* b = &a;
-		auto&& param0 = 99;
-
-
-		auto&& param2 = &param0;
-		const auto& param = 96;
-
-	}
-	
-	static Test* template_test;
-	void TestFunction();
-};
-inline Test* Test::template_test = new Test();
 
 inline void InlineTest() {
 	Print(printf("MLB %p\n", _AddressOfReturnAddress()));
@@ -470,20 +454,6 @@ public:
 
 
 
-class FASMTest {
-public:
-	FASMTest(int a, int b) {
-		std::cout << "Constructor called with a = " << a << " and b = " << b << std::endl;
-	}
-
-	~FASMTest() {
-		std::cout << "Destructor called" << std::endl;
-	}
-
-	void MyMemberFunction() {
-		std::cout << "MyMemberFunction called" << std::endl;
-	}
-};
 
 
 class FMath
@@ -495,193 +465,139 @@ class FMath
         return (A >= B) ? A : B;
     }
 };
-inline void Test::TestFunction()
+
+template<int32 Size,int32 Alignment>
+struct TAlignedBytes;
+
+template<int32 Size>
+struct TAlignedBytes<Size,1>
 {
+    uint8 Data[Size];
+};
 
-	ADLTest::MyStruct adltest;
-	(ADL)(adltest);
+#define AlignedBytes(alignment) \
+template<int32 Size> \
+struct TAlignedBytes<Size, alignment> \
+{ \
+    struct alignas(alignment) my_struct\
+    {\
+       uint8 Data[Size]; \
+    };\
+    my_struct s;\
+};
 
+AlignedBytes(2)
+AlignedBytes(4)
+AlignedBytes(8)
+AlignedBytes(16)
 
-#pragma region ReadPaddingAddress
-	FStructWithPadding StructWithPadding{};
-	uint8* StartAddress = reinterpret_cast<uint8*>(&StructWithPadding);
-	StartAddress += 16;
-	uint8 V_Padding = *StartAddress;
-#pragma endregion
-
-#pragma region ReadPaddingAddress
-
-    FBaseClass* BaseClass = new FDerivedClass();
-
-    delete BaseClass;
-#pragma endregion
-
-#pragma region SIMD
-	int a = 10;
-	int b = 20;
-	int result;
-
-	FASMTest* obj;
-	__asm {
-		mov eax, a;    // 将变量 a 的值移动到 eax 寄存器
-		add eax, b;   // 将变量 b 的值加到 eax 寄存器
-		mov result, eax;// 将 eax 寄存器的值移动到 result 变量
-
-
-
-		// Allocate memory for the object
-		push b
-			push a
-			call FASMTest::FASMTest
-			mov obj, eax
-
-			// Call the member function
-			mov ecx, obj
-			call FASMTest::MyMemberFunction
-
-			// Call the destructor
-			mov ecx, obj
-			call FASMTest::~FASMTest
-
-			// Free the memory
-			add esp, 8
-	}
-
-	float X,Y; 
-	FMath::Max(X, Y);
-
-    Print(result);
-#pragma endregion
-	Print("Start MLB Cotr");
-	//MLBClass* C = new MLBClass;
-	//Func g = &MLBClass::Function;
-	//typedef void func(void);
-	//Func* f = (Func*)0x7FF7C320114028;
-	//(Class.*g)();
-	//MLBClass* d = new (C)MLBClass();
-	float* TestNewFloat = new float[2]{0.f};
-
-	float* PNewFloat = new (TestNewFloat) float(5.f);
-
-	auto temp = binary<102>::value;
-	Print(temp);
-	Print(4 | 1);
-	std::cout << std::hex << TestNewFloat<<"\n";
-	Print(printf("TestNewFloat address %p", TestNewFloat));
-	Print(printf("TestNewFloat address %p", PNewFloat));
-	Print(printf("TestNewFloat address %f", *PNewFloat));
-	//���� ��ջ�洦   AddressSan
-	//TestNewFloat[2] = 58.f;
-	//delete []TestNewFloat;
-
-	Print(::sqrt( 2));
+template<typename T>
+struct TCompatibleAlignment : public TAlignedBytes<sizeof(T),alignof(T)>
+{
 	
-	int&& testRightint = 3;
-	int& p = testRightint;
-	std::string Result = _Is_Reference_<decltype(321)>::value ? "true" : "false";
-	Print(Result);
-
-	Print(std::is_same<int, float>::value ? "true" : "false");
-
-
-
-	Print(std::is_integral<char>::value ? "true" : "false");
-	Order(new int(5), 5);
-	Orde(new int(5), 2.0);
-	Print(HasMember<bool_value_true>::value ? "true" : "false");
-	MLB_Tuple(3, "aaa");
-
-
-	//MultiThreadTest MultiThread;
-	//MultiThread.Run();
-	int* pInt = new int(50);
-	void* VoidpInt = pInt;
-	std::cout << &(*pInt) << "\n";
-	std::cout << &(VoidpInt) << "\n";
-	std::string pChar = "MLB";
-	void* pStr = &pChar;
-	//VoidpInt = pStr;
-
-	std::string Result1 = reinterpret_cast<const char*>(pStr);
-	int* Result11 = reinterpret_cast<int*>(VoidpInt);
-	Print(*Result11);
-	const char* testcharlength = "aaaaa";
-	Print(std::strlen(testcharlength));
-	Print(sizeof(testcharlength));
-	std::vector<int> vec{ 1,3,5,9,4,45 };
-	for (size_t i = 0; i < vec.capacity(); i++)
+	T* GetTypePtr()
 	{
-		Print(vec[i]);
+        return reinterpret_cast<T*>(&TAlignedBytes<sizeof(T), alignof(T)>::s);
 	}
-	Print("--------------------");
-	vec.erase(vec.begin() + 2, vec.begin() + 3);
-	Print(vec.capacity());
-	vec.shrink_to_fit();
-	Print("--------------------");
-	Print(vec.capacity());
-	/*for (size_t i = 0; i < vec.capacity(); i++)
+
+	const T* GetTypePtr() const
 	{
-		Print(vec[i]);
+		return reinterpret_cast<T*>(&TAlignedBytes<sizeof(T), alignof(T)>::s);
+	}
+};
 
-	}*/
+template<typename T>
+struct TNot {
+    static constexpr bool value = !T::value;
+};
 
-	//MultiThreadTest thread_test;
-	//thread_test.PromisTestRun();
+template<typename Ret,typename ...Args>
+struct TFunction
+{
+    //using FuncType = Ret(Args...);
+	// TFunction(FuncType Fun)
+	// {
+	// 	Function = Fun;
+	// }
 
-	class Base
+	TFunction(TYPE_OF_NULLPTR = nullptr)
 	{
-	public:
-		const std::map<int, std::string> CopyOrEmptyReference()
-		{
-			std::map<int, std::string> RVO;
-			return RVO;
-		}
-	};
+		Function = nullptr;
+	}
 
-	class Derived :public Base
+	template<typename T,typename = typename  std::enable_if<TNot<std::is_function<T>>::value>::type>
+    TFunction(T&& Func)
 	{
-	public:
+		Function = Func;
+	}
 
-	};
+	Ret operator()(Args...args)
+	{
+       return  Function(args...);
+	}
 
-	Base* base = new Derived();
-	//std::map<int, std::string> er = base->CopyOrEmptyReference();
+private:
+    typedef Ret(*FunctionType)(Args...);
+	FunctionType Function;
+};
 
 
-	Print(TDerivedFrom<float, std::string>::Result ? "true" : "false");
-	std::string Str = "============ = over============ = ";
-	Print(Str);
-	std::cout << "cc" << Str << "\n";
-	Print("game over");
-#ifdef MM
-	Print("MM");
-#else
-	Print("CC");
+struct FPrint
+{
+	static FPrint GetPrint(){
+		return FPrint{};
+    }
+    std::string Str = "MLB";
+    FPrint()
+    {
+		Print("Ctor FPrint");
+    }
+
+	~FPrint()
+    {
+		Print("Dtor FPrint");
+    }
+};
+
+
+
+#if __cplusplus >= 202002L || 1
+
+
+template<typename T>
+concept IsSmall = sizeof(T) < 32;
+
+
+template<typename ...T>
+concept IsIntegral = (std::is_integral_v<T> && ... ) && (IsSmall<T> && ...);
+
+
+template<typename ...T>
+concept IsVector = ((std::is_same_v<T, std::vector<typename T::value_type>> || std::is_array_v<T>) && ...);
+//函数声明
+template< typename T,typename ...Args>
+[[noreturn]] void _fastcall CallFunc(Args&& ...args);
+//函数定义
+template<typename T, typename ...Args>
+inline void(CallFunc)(T&& arg, Args&& ...args) {
+
+
+    if constexpr  (IsVector<T>)
+    {
+        Print("IsVector");
+    }
+    else
+    {
+		Print("testFunc", arg);
+    }
+
+	if (sizeof...(args)>0)
+	{
+        CallFunc(std::forward<Args>(args)...);
+	}
+};
+
 #endif
-	InlineTest();
-
-   
-	Print("Empty Class: ",sizeof(EmpltyClass));
-
-
-	// Demonstrate using promise<int> to transmit a result between threads.
-	std::vector<int> numbers = { 1, 2, 3, 4, 5, 6 };
-	std::promise<int> accumulate_promise;
-	std::future<int> accumulate_future = accumulate_promise.get_future();
-	std::thread work_thread(accumulate, numbers.begin(), numbers.end(),
-		std::move(accumulate_promise));
-
-	// future::get() will wait until the future has a valid result and retrieves it.
-	// Calling wait() before get() is not needed
-	//accumulate_future.wait();  // wait for result
-	//std::cout << "thread result = " << accumulate_future.get() << '\n';
-	Print(accumulate_future.get());
-	work_thread.join();  // wait for thread completion
-	Print("Join work_thread");
-	delete base;
-	delete[]TestNewFloat;
-}
-
 
 // ceate a new one when  include this .h once;
 //static int a = 1;

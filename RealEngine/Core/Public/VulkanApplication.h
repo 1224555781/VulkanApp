@@ -9,7 +9,7 @@
 #include "VulkanTypeDefine.h"
 #include <optional>
 
-#define RUNTIME_ERROR(S) throw std::runtime_error(S);
+#define RUNTIME_ERROR(...) VulkanApplication::HandleRuntimeError(__VA_ARGS__);
 
 struct FVulkanQueueFamily
 {
@@ -80,7 +80,11 @@ public:
 
         return VK_FALSE;
     }
+
+    template<typename ...T>
+    static void HandleRuntimeError(T&& ...Arg);
 private:
+    
     void SetupDebugMessenger();
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
@@ -260,4 +264,11 @@ private:
     int32 MaxFramInFight;
     int32 CurrentFrame;
 };
+
+template <typename ... T>
+void VulkanApplication::HandleRuntimeError(T&&...Arg)
+{
+    std::cerr << "Runtime Error" << (std::forward<T>(Arg), ...) << std::endl;
+    std::abort();
+}
 

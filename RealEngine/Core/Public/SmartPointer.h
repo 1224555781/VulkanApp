@@ -1,4 +1,6 @@
+
 #include"Core/Public/template_test.h"
+#include <intrin.h>
 #include"Core/Public/VulkanTypeDefine.h"
 
 class FThreadSafeCounter
@@ -7,19 +9,19 @@ public:
 	FThreadSafeCounter()
     {
         Set(0);
-    };
+    }
     FThreadSafeCounter(int32 InValue) 
     { 
         Set(InValue);
-    };
+    }
 
     inline void Increament() {
-        ::_InterlockedIncrement((long*)&Counter);
+        ::_InterlockedExchangeAdd8((char*)&Counter,1);
     }
 
     inline void Decreament()
     {
-        ::_InterlockedDecrement((long*)&Counter);
+        ::_InterlockedIncrement16((short*)&Counter);
     }
 
     inline void Add(int32 Value)
@@ -57,7 +59,7 @@ public:
     void AddRef() 
     {
         Counter.Increament();
-    };
+    }
 
     void Release()
     {
@@ -66,12 +68,12 @@ public:
         {
             delete this;
         }
-    };
+    }
 
     inline uint32 GetRefCount() 
     {
         return Counter.GetValue();
-    };
+    }
 
 private:
     mutable FThreadSafeCounter Counter;
@@ -164,7 +166,7 @@ public:
     }
 
     /// <summary>
-    /// ²»ÔÊÐí´«µÝ const by reference
+    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ const by reference
     /// </summary>
     /// <param name="Other"></param>
     /// <returns>null</returns>
@@ -183,7 +185,7 @@ public:
     }
 
     /// <summary>
-    /// ÁÙÖÕÖµ´«µÝ¹ýÀ´´¦ÀíÆäÕæÕýµÄÖ¸ÕëÖÃÎª¿Õ-×ªÒÆËùÓÐÈ¨µ½µ±Ç°Ö¸Õë-¿Ç×Ó²»×ö´¦Àí
+    /// ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Ý¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½-×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¨ï¿½ï¿½ï¿½ï¿½Ç°Ö¸ï¿½ï¿½-ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     /// <param name="Other"></param>
     /// <returns> "*this" </returns>
@@ -243,3 +245,162 @@ private:
     template <typename OtherType>
     friend class TRefCountPtr;
 };
+
+
+template<typename T>
+class FRefControllerBase
+{
+
+public:
+    virtual ~FRefControllerBase() = default;
+
+    int32 RefCount = 0 ;
+
+    void AddRef()
+    {
+        RefCount++;
+    }
+
+    void DecRef()
+    {
+        RefCount--;
+    }
+
+    virtual void DestroyObject() = 0;
+};
+
+template<typename T>
+class FControllerPtr final :public FRefControllerBase<T>
+{
+    using Super = FRefControllerBase<T>;
+    T* Object;
+public:
+    FControllerPtr(T* InObject)
+        :Object(InObject)
+    {
+    }
+
+    virtual void DestroyObject()override
+    {
+        delete Object;
+    }
+};
+
+
+template<typename T>
+class FControllerRef final :public FRefControllerBase<T>
+{
+    using Super = FRefControllerBase<T>;
+    TCompatibleAlignment<T> Object;
+public:
+    template<typename ...Arg>
+    FControllerRef(Arg && ... args)
+    {
+        new (&Object) T(Forward<Arg>(args)...);
+    }
+
+    T* GetObjectPtr()
+    {
+        return Object.GetTypePtr();
+    }
+
+
+    virtual void DestroyObject()override
+    {
+        if constexpr (std::is_trivially_destructible<T>::value)
+        {
+            GetObjectPtr()->T::~T();
+        }
+    }
+
+};
+
+
+template<typename T>
+class TSharedPtr
+{
+public:
+    TSharedPtr(T* InObject, FRefControllerBase<T>* InController)
+        :Object(InObject), Controller(InController)
+    {
+        Controller->AddRef();
+    }
+
+    ~TSharedPtr()
+    {
+        Controller->DecRef();
+        if (Controller->RefCount==0)
+        {
+            Controller->DestroyObject();
+            delete Controller;
+        }
+    }
+
+    TSharedPtr(const TSharedPtr& Ptr)
+        :Object(Ptr.Object), Controller(Ptr.Controller)
+    {
+        Controller->AddRef();
+    }
+
+    TSharedPtr& operator =(const TSharedPtr& Ptr)
+    {
+        if (this != &Ptr)
+        {
+            Object = Ptr.Object;
+            Controller = Ptr.Controller;
+            Controller->AddRef();
+        }
+        return *this;
+    }
+
+    TSharedPtr& operator =(TSharedPtr&& Ptr) noexcept
+    {
+        if (this != &Ptr)
+        {
+            Object = Ptr.Object;
+            Controller =  Ptr.Controller;
+            Ptr.Controller = nullptr;
+            Ptr.Object = nullptr;
+        }
+
+        
+        return *this;
+    }
+
+    [[nodiscard]] bool IsValid()
+    {
+        return Object != nullptr;
+    }
+
+private:
+    T* Object;
+    FRefControllerBase<T>* Controller;
+
+};
+
+template<typename T>
+inline FRefControllerBase<T>* MakeControllerPtr(T* Object)
+{
+    return new FControllerPtr<T>(Object);
+}
+
+
+template<typename T, typename ...Arg>
+inline FRefControllerBase<T>* MakeControllerRef(Arg&& ...args)
+{
+    return new FControllerRef<T>(std::forward<Arg>(args)...);
+}
+
+template<typename T>
+inline TSharedPtr<T> MakeShareable(T* Object)
+{
+    return TSharedPtr<T>(Object,MakeControllerPtr(Object));
+}
+
+
+template<typename T,typename ...Arg>
+inline TSharedPtr<T> MakeShared(Arg&& ...args)
+{
+    FControllerRef<T>* Ref = static_cast<FControllerRef<T>*> (MakeControllerRef<T>(std::forward<Arg>(args)...));
+    return TSharedPtr<T>(Ref->GetObjectPtr(), Ref);
+}

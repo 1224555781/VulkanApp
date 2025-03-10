@@ -52,6 +52,8 @@ const std::vector<uint32> indices = {
     0,1,2,0,2,3
 };
 
+
+
 VulkanApplication::VulkanApplication()
     :MaxFramInFight(2)
     ,CurrentFrame(0)
@@ -82,7 +84,7 @@ void VulkanApplication::FindPhysicalDevice()
     vkEnumeratePhysicalDevices(Instance, &deviceCount, nullptr);
 
     if (deviceCount == 0) {
-        RUNTIME_ERROR("failed to find GPUs with Vulkan support!");
+        RUNTIME_ERROR("failed to find GPUs with Vulkan support!", deviceCount);
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -276,7 +278,10 @@ std::vector<const char*> getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
+    if (!glfwExtensions)
+    {
+        RUNTIME_ERROR("glfwExtensions is null");
+    }
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
     if (enableValidationLayers) {
@@ -1327,7 +1332,7 @@ void VulkanApplication::TransitionImageLayout(VkImage image, VkFormat format, Vk
         destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     }
     else {
-        throw std::invalid_argument("unsupported layout transition!");
+        HandleRuntimeError("unsupported layout transition!");
     }
     vkCmdPipelineBarrier(
         command_buffer,

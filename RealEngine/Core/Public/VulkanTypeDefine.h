@@ -129,3 +129,7 @@ struct FUniformBufferObject
     glm::mat4 view;
     glm::mat4 proj;
 };
+
+
+typedef int32					TYPE_OF_NULL;
+typedef decltype(nullptr)		TYPE_OF_NULLPTR;
