@@ -12,7 +12,24 @@
 #define DLLIMPORT __declspec(dllimport)
 
 
+template<typename T, typename R, typename... Arg>
+class FDelegateBase_Internal
+{
+public:
+	R (*m_func)(T, Arg...);
+	FDelegateBase_Internal(T* ptr, R (*func)(T, Arg...))
+		: m_func(func)
+		, m_ptr(ptr)
+	{}
 
+	R BroadCast(Arg... args)
+	{
+		return m_func(m_ptr.get(), args...);
+	}
+
+private:
+	SafePtr<T> m_ptr;
+};
 
 
 

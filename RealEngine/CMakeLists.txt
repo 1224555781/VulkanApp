@@ -1,7 +1,7 @@
 ﻿# CMakeList.txt : CMake project for RealEngine, include source and define
 # project specific logic here.
 #
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 4.0.0)
 
 
 
@@ -9,6 +9,9 @@ file(GLOB_RECURSE CORE_SOURCE "./Core/Private/*.cpp")
 file(GLOB_RECURSE CORE_HEADER "./Core/Public/*.h")
 file(GLOB_RECURSE SOURCE_SOURCE "./Source/Private/*.cpp")
 file(GLOB_RECURSE SOURCE_HEADER "./Source/Public/*.h")
+file(GLOB_RECURSE SOURCE_HEADER "./ThirdParty/YLT/*.hpp")
+file(GLOB_RECURSE SOURCE_HEADER "./ThirdParty/YLT/*.h")
+file(GLOB_RECURSE SOURCE_HEADER "./ThirdParty/YLT/*.cpp")
 # Add source to this project's executable.
 add_executable (RealEngine "Windows/WindowsMain.cpp"  ${CORE_SOURCE} 
 ${CORE_HEADER} ${SOURCE_SOURCE} ${SOURCE_HEADER})
