@@ -36,3 +36,4 @@
 *.tlog
 *.spv
 /bin
+BuildTool/BuilderTemp
